@@ -138,39 +138,36 @@ class ThresholdDialog extends PureComponent {
 
   onAirClick = () => {
     let val = this.calcLevelWindow(-1024, -800);
-    this.props.onPresetClick(val[0], val[1]);
-    this.setState({
-      thresholdLevel: val[0],
-      thresholdWindow: val[1],
-    });
+    this.onButtonClick(val);
   };
 
   onDPIClick = () => {
     let val = this.calcLevelWindow(-800, -200);
-    this.props.onPresetClick(val[0], val[1]);
-    this.setState({
-      thresholdLevel: val[0],
-      thresholdWindow: val[1],
-    });
+    this.onButtonClick(val);
   };
 
   onTissueClick = () => {
     let val = this.calcLevelWindow(-200, 250);
-    this.props.onPresetClick(val[0], val[1]);
-    this.setState({
-      thresholdLevel: val[0],
-      thresholdWindow: val[1],
-    });
+    this.onButtonClick(val);
   };
 
   onBoneClick = () => {
     let val = this.calcLevelWindow(250, 3071);
+    this.onButtonClick(val);
+  };
+
+  onButtonClick = (val) => {
     this.props.onPresetClick(val[0], val[1]);
     this.setState({
       thresholdLevel: val[0],
       thresholdWindow: val[1],
     });
-  };
+
+    this.valueLevel.current.value = val[0]
+    this.valueWindow.current.value = val[1]
+    this.valueLevelManual.current.value = val[0]
+    this.valueWindowManual.current.value = val[1]
+  }
 
   render() {
     return (
