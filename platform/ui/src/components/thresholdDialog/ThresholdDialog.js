@@ -2,6 +2,7 @@ import './ThresholdDialog.styl';
 
 import React, { PureComponent, useEffect } from 'react';
 import { withTranslation } from '../../contextProviders';
+import cornerstone from 'cornerstone-core';
 
 import PropTypes from 'prop-types';
 

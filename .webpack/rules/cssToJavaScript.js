@@ -3,7 +3,7 @@ const autoprefixer = require('autoprefixer');
 const cssToJavaScript = {
   test: /\.css$/,
   use: [
-    'style-loader',
+    'style-er',
     { loader: 'css-loader', options: { importLoaders: 1 } },
     {
       loader: 'postcss-loader',

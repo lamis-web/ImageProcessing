@@ -20,19 +20,41 @@ const mapStateToProps = state => {
   const { threshold } = viewportSpecificData[activeViewportIndex] || {};
   const dom = commandsManager.runCommand('getActiveViewportEnabledElement');
 
-  // cornerstone.getViewport(dom).voi.windowWidth = 1400;
-  let viewport = cornerstone.getViewport(dom);
-  cornerstone.setViewport(dom, viewport);
+  // let viewport = cornerstone.getViewport(dom);
+  // cornerstone.setViewport(dom, viewport);
+  let thresholdData;
+  try {
+    let viewport = cornerstone.getViewport(dom);
+    cornerstone.setViewport(dom, viewport);
+    thresholdData = threshold || {
+      // TODO: need to change the hard coded data
+      thresholdLevel: viewport.voi.windowCenter,
+      thresholdWindow: viewport.voi.windowWidth,
+      thresholdMinLevel: -2000,
+      thresholdMaxLevel: 4000,
+      thresholdMinWindow: 0,
+      thresholdMaxWindow: 4000,
+    };
 
-  const thresholdData = threshold || {
-    // TODO: need to change the hard coded data
-    thresholdLevel: viewport.voi.windowCenter,
-    thresholdWindow: viewport.voi.windowWidth,
-    thresholdMinLevel: -2000,
-    thresholdMaxLevel: 4000,
-    thresholdMinWindow: 0,
-    thresholdMaxWindow: 4000,
-  };
+
+  } catch {
+    // // console.log("not now")
+    thresholdData = threshold || {
+      // TODO: need to change the hard coded data
+      thresholdLevel: 0,
+      thresholdWindow: 0,
+      thresholdMinLevel: -2000,
+      thresholdMaxLevel: 4000,
+      thresholdMinWindow: 0,
+      thresholdMaxWindow: 4000,
+    };
+    // // New props we're creating?
+    // return {
+    //   activeEnabledElement: dom,
+    //   activeViewportThresholdData: thresholdData,
+    //   activeViewportIndex: state.viewports.activeViewportIndex,
+    // };
+  }
 
   // New props we're creating?
   return {

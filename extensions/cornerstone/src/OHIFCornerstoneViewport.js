@@ -172,6 +172,7 @@ class OHIFCornerstoneViewport extends Component {
     this.setStateFromProps();
   }
 
+
   componentDidUpdate(prevProps) {
     const { displaySet } = this.props.viewportData;
     const prevDisplaySet = prevProps.viewportData.displaySet;
