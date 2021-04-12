@@ -20,25 +20,18 @@ const mapStateToProps = state => {
   const { threshold } = viewportSpecificData[activeViewportIndex] || {};
   const dom = commandsManager.runCommand('getActiveViewportEnabledElement');
 
-  console.log('Threshold DOM', dom);
-  console.log('Current Index', activeViewportIndex);
-
-  console.log(cornerstone.getViewport(dom).voi);
-
   // cornerstone.getViewport(dom).voi.windowWidth = 1400;
   let viewport = cornerstone.getViewport(dom);
-  viewport.voi.windowWidth = 1400;
-  viewport.voi.windowCenter = -800;
   cornerstone.setViewport(dom, viewport);
 
   const thresholdData = threshold || {
     // TODO: need to change the hard coded data
-    thresholdLevel: 100,
-    thresholdWindow: 1000,
-    thresholdMinLevel: -1000,
-    thresholdMaxLevel: 3000,
-    thresholdMinWindow: -1000,
-    thresholdMaxWindow: 3000,
+    thresholdLevel: viewport.voi.windowCenter,
+    thresholdWindow: viewport.voi.windowWidth,
+    thresholdMinLevel: -2000,
+    thresholdMaxLevel: 4000,
+    thresholdMinWindow: 0,
+    thresholdMaxWindow: 4000,
   };
 
   // New props we're creating?
@@ -65,6 +58,10 @@ const mergeProps = (propsFromState, propsFromDispatch, ownProps) => {
     activeViewportIndex,
   } = propsFromState;
 
+  const dom = commandsManager.runCommand('getActiveViewportEnabledElement');
+  // cornerstone.getViewport(dom).voi.windowWidth = 1400;
+  let viewport = cornerstone.getViewport(dom);
+
   return {
     thresholdLevel: activeViewportThresholdData.thresholdLevel,
     thresholdWindow: activeViewportThresholdData.thresholdWindow,
@@ -73,20 +70,19 @@ const mergeProps = (propsFromState, propsFromDispatch, ownProps) => {
     thresholdMinWindow: activeViewportThresholdData.thresholdMinWindow,
     thresholdMaxWindow: activeViewportThresholdData.thresholdMaxWindow,
     onThresholdLevelChanged: level => {
-      console.log(level, ' LEVELLL');
+      viewport.voi.windowCenter = level;
+      cornerstone.setViewport(dom, viewport);
+    },
+    onThresholdWindowChanged: window => {
+      viewport.voi.windowWidth = window;
+      cornerstone.setViewport(dom, viewport);
     },
 
-    onAirClick: () => {
-      console.log('pressed something');
-    },
-    onBoneClick: () => {
-      console.log('pressed something');
-    },
-    onDPIClick: () => {
-      console.log('pressed something');
-    },
-    onTissueClick: () => {
-      console.log('pressed something');
+    onPresetClick: (level, window) => {
+      console.log(level, window);
+      viewport.voi.windowCenter = level;
+      viewport.voi.windowWidth = window;
+      cornerstone.setViewport(dom, viewport);
     },
   };
 };

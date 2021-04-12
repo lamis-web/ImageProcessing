@@ -1,6 +1,6 @@
 import './ThresholdDialog.styl';
 
-import React, { PureComponent } from 'react';
+import React, { PureComponent, useEffect } from 'react';
 import { withTranslation } from '../../contextProviders';
 
 import PropTypes from 'prop-types';
@@ -21,6 +21,16 @@ class ThresholdDialog extends PureComponent {
       thresholdMinWindow: props.thresholdMinWindow,
       thresholdMaxWindow: props.thresholdMaxWindow,
     };
+
+    this.valueLevel = React.createRef(this.thresholdLevel);
+    this.valueWindow = React.createRef(this.thresholdWindow);
+    this.valueLevelManual = React.createRef(this.thresholdLevel);
+    this.valueWindowManual = React.createRef(this.thresholdWindow);
+
+    this.handleLevelChange = this.handleLevelChange.bind(this);
+    this.handleWindowChange = this.handleWindowChange.bind(this);
+    this.handleLevelChangeManual = this.handleLevelChangeManual.bind(this);
+    this.handleWindowChangeManual = this.handleWindowChangeManual.bind(this);
   }
 
   static propTypes = {
@@ -58,50 +68,107 @@ class ThresholdDialog extends PureComponent {
     // }
   }
 
+  calcLevelWindow = (min, max) => {
+    let level = parseInt((min + max) / 2.0);
+    let window = parseInt(max - min);
+
+    return [level, window];
+  };
+
   handleLevelChange = event => {
     const target = event.target;
     let value = target.value;
 
     const name = target.name;
-    console.log([name]);
 
     this.setState({ [name]: value });
 
     if (name === 'thresholdLevel' && this.props.onThresholdLevelChanged) {
       this.props.onThresholdLevelChanged(parseInt(value));
     }
+
+    this.valueLevel.current.value = parseInt(value);
   };
 
   handleWindowChange = event => {
-    this.setState({ thresholdWindow: event.target.value });
+    const target = event.target;
+    let value = target.value;
+
+    const name = target.name;
+
+    this.setState({ [name]: value });
+
+    if (name === 'thresholdWindow' && this.props.onThresholdWindowChanged) {
+      this.props.onThresholdWindowChanged(parseInt(value));
+    }
+
+    this.valueWindow.current.value = parseInt(value);
+  };
+
+  handleLevelChangeManual = event => {
+    const target = event.target;
+    let value = target.value;
+
+    const name = target.name;
+
+
+    this.setState({ [name]: value });
+
+    if (name === 'thresholdLevel' && this.props.onThresholdLevelChanged) {
+      this.props.onThresholdLevelChanged(parseInt(value));
+    }
+
+    this.valueLevelManual.current.value = parseInt(value);
+  };
+
+  handleWindowChangeManual = event => {
+    const target = event.target;
+    let value = target.value;
+
+    const name = target.name;
+
+    this.setState({ [name]: value });
+
+    if (name === 'thresholdWindow' && this.props.onThresholdWindowChanged) {
+      this.props.onThresholdWindowChanged(parseInt(value));
+    }
+
+    this.valueWindowManual.current.value = parseInt(value);
   };
 
   onAirClick = () => {
-    console.log('air clicked');
+    let val = this.calcLevelWindow(-1024, -800);
+    this.props.onPresetClick(val[0], val[1]);
     this.setState({
-      thresholdLevel: -1024,
-      thresholdWindow: -800,
+      thresholdLevel: val[0],
+      thresholdWindow: val[1],
     });
   };
 
   onDPIClick = () => {
+    let val = this.calcLevelWindow(-800, -200);
+    this.props.onPresetClick(val[0], val[1]);
     this.setState({
-      thresholdLevel: -800,
-      thresholdWindow: -200,
+      thresholdLevel: val[0],
+      thresholdWindow: val[1],
     });
   };
 
   onTissueClick = () => {
+    let val = this.calcLevelWindow(-200, 250);
+    this.props.onPresetClick(val[0], val[1]);
     this.setState({
-      thresholdLevel: -250,
-      thresholdWindow: 250,
+      thresholdLevel: val[0],
+      thresholdWindow: val[1],
     });
   };
 
   onBoneClick = () => {
+    let val = this.calcLevelWindow(250, 3071);
+    this.props.onPresetClick(val[0], val[1]);
     this.setState({
-      thresholdLevel: 250,
-      thresholdWindow: 3071,
+      thresholdLevel: val[0],
+      thresholdWindow: val[1],
     });
   };
 
@@ -120,12 +187,15 @@ class ThresholdDialog extends PureComponent {
               step={10}
               value={this.state.thresholdLevel}
               onChange={this.handleLevelChange}
+              ref={this.valueLevelManual}
             />
             <input
+              name="thresholdLevel"
               className="thresholdLevelValue"
-              type="text"
-              value={this.state.thresholdLevel}
-              onChange={this.handleWindowChange}
+              type="number"
+              defaultValue={this.state.thresholdLevel}
+              onChange={this.handleLevelChangeManual}
+              ref={this.valueLevel}
             ></input>
           </div>
           <div className="threshold-content window-content">
@@ -139,12 +209,15 @@ class ThresholdDialog extends PureComponent {
               step={10}
               value={this.state.thresholdWindow}
               onChange={this.handleWindowChange}
+              ref={this.valueWindowManual}
             />
             <input
+              name="thresholdWindow"
               className="thresholdWindowValue"
-              type="text"
-              value={this.state.thresholdWindow}
-              onChange={this.handleWindowChange}
+              type="number"
+              defaultValue={this.state.thresholdWindow}
+              onChange={this.handleWindowChangeManual}
+              ref={this.valueWindow}
             ></input>
           </div>
           <div className="threshold-content preset-content">

@@ -10,10 +10,6 @@
   "files.eol": "\n",
   "files.insertFinalNewline": true,
   "files.trimFinalNewlines": true,
-  // ===
-  // Event Triggers
-  // ===
-  "editor.formatOnSave": true,
   "eslint.autoFixOnSave": true,
   "eslint.run": "onSave",
   "eslint.validate": [
@@ -31,5 +27,6 @@
   "workbench.colorCustomizations": {},
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true
-  }
+  },
+  "editor.formatOnSave": false
 }
