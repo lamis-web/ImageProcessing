@@ -22,14 +22,20 @@ const mapStateToProps = state => {
 
   // let viewport = cornerstone.getViewport(dom);
   // cornerstone.setViewport(dom, viewport);
+
   let thresholdData;
   try {
-    let viewport = cornerstone.getViewport(dom);
-    cornerstone.setViewport(dom, viewport);
+    // console.log(getEnabledElement(activeViewportIndex));
+    // console.log(dom);
+    // console.log(getEnabledElement(activeViewportIndex) === dom)
+    let v = cornerstone.getViewport(dom);
+    // cornerstone.setViewport(dom, viewport);
     thresholdData = threshold || {
       // TODO: need to change the hard coded data
-      thresholdLevel: viewport.voi.windowCenter,
-      thresholdWindow: viewport.voi.windowWidth,
+      // thresholdLevel: 0,
+      // thresholdWindow: 0,
+      thresholdLevel: v.voi.windowCenter,
+      thresholdWindow: v.voi.windowWidth,
       thresholdMinLevel: -2000,
       thresholdMaxLevel: 4000,
       thresholdMinWindow: 0,
@@ -82,7 +88,7 @@ const mergeProps = (propsFromState, propsFromDispatch, ownProps) => {
 
   const dom = commandsManager.runCommand('getActiveViewportEnabledElement');
   // cornerstone.getViewport(dom).voi.windowWidth = 1400;
-  let viewport = cornerstone.getViewport(dom);
+
 
   return {
     thresholdLevel: activeViewportThresholdData.thresholdLevel,
@@ -92,19 +98,23 @@ const mergeProps = (propsFromState, propsFromDispatch, ownProps) => {
     thresholdMinWindow: activeViewportThresholdData.thresholdMinWindow,
     thresholdMaxWindow: activeViewportThresholdData.thresholdMaxWindow,
     onThresholdLevelChanged: level => {
+      let viewport = cornerstone.getViewport(dom);
       viewport.voi.windowCenter = level;
       cornerstone.setViewport(dom, viewport);
     },
     onThresholdWindowChanged: window => {
+      let viewport = cornerstone.getViewport(dom);
       viewport.voi.windowWidth = window;
       cornerstone.setViewport(dom, viewport);
     },
 
     onPresetClick: (level, window) => {
       console.log(level, window);
+      let viewport = cornerstone.getViewport(dom);
       viewport.voi.windowCenter = level;
       viewport.voi.windowWidth = window;
       cornerstone.setViewport(dom, viewport);
+
     },
   };
 };
