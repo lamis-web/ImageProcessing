@@ -2,6 +2,6 @@
 .envrc
 sample_dicom/
 
-dicomread.py
+practice.py
 analyze_to_dicom.py
 analyze_and_nii_to_dicom.py

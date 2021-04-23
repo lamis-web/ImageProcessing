@@ -1,12 +1,13 @@
 import os
 import sys
-import os.path
 import httplib2
 import base64
+import uuid
+from typing import Dict
 from pydicom import dcmread
 
 if len(sys.argv) != 4:
-    print("Usage: python %s [path] [username] [password]" % (
+    print("Usage: python %s [dicom_directory] [orthanc_username] [orthanc_password]" % (
         sys.argv[0]))
     sys.exit(0)
 
@@ -16,15 +17,29 @@ ORTHANC_URL = 'http://%s:%d/instances' % (HOST_URL, ORTHANC_PORT)
 SUCCESS_COUNT = 0
 TOTAL_COUNT = 0
 FAILURE_PATH = []
+PULMORAD_ROOT_UID = '1.2.826.0.1.3680043.8.499.'
 
 
-def UploadFile(dicom_path: str):
-    """[Upload single instance of DICOM image]
+def parse_string_from_dicom_path(dicom_path) -> str:
+    target = os.path.basename(os.path.dirname(dicom_path))
+    return target
+
+
+def int_uuid_generator() -> uuid.UUID:
+    return int(uuid.uuid4())
+
+
+def is_dicom(file):
+    file_extension = file.split('.')[-1]
+    return file_extension == 'dcm'
+
+
+def upload_dicom_image(dicom_path: str):
+    """[Upload single instance of DICOM image(.dcm)]
 
     Args:
         dicom_path ([str]): [path to the single DICOM image]
     """
-
     global SUCCESS_COUNT
     global TOTAL_COUNT
 
@@ -54,39 +69,43 @@ def UploadFile(dicom_path: str):
             else:
                 sys.stdout.write(" => failure\n")
                 FAILURE_PATH.append(dicom_path)
-
         except:
             type, value, traceback = sys.exc_info()
             sys.stderr.write(str(value))
             sys.stdout.write(" => unable to connect\n")
 
 
-if __name__ == '__main__':
-    # Recursively upload dcm files in a directory
-    for root, dirs, files in os.walk(sys.argv[1]):
-        for file in files:
-            file_extension = file.split('.')[-1]
-            if file_extension == 'dcm' or file_extension == '':
-                dicom_path = os.path.join(root, file)
+def overwrite_dicom_header(study_instance_uid_dict: Dict, dicom_path: str):
+    """[Overwrite dicom headers of interest with processed value]
 
+    Args:
+        study_instance_uid_dict (Dict): [store {study_name:uid}]
+        dicom_path (str): [dicom instance path]
+    """
+    study_name = parse_string_from_dicom_path(dicom_path)
+    if study_name not in study_instance_uid_dict:
+        uid = PULMORAD_ROOT_UID + str(int_uuid_generator())
+        study_instance_uid_dict[study_name] = uid
+        print(study_instance_uid_dict.get(study_name))
+
+    dicom_instance = dcmread(dicom_path)
+    dicom_instance.StudyInstanceUID = study_instance_uid_dict[study_name]
+    dicom_instance.PatientName = study_name
+    # dicom_instance.AccessionNumber = accession_number
+    dicom_instance.save_as(dicom_path)
+
+
+if __name__ == '__main__':
+    dicom_directory = sys.argv[1]
+    study_instance_uid_dict: Dict = {}
+    # Recursively upload all .dcm files in dicom_directory
+    for root, dirs, files in os.walk(dicom_directory):
+        for file in files:
+            if is_dicom(file):
+                dicom_path = os.path.join(root, file)
                 try:
-                    subj_id = os.path.basename(
-                        os.path.dirname(os.path.dirname(dicom_path)))
-                    parent_dirname = os.path.basename(
-                        os.path.dirname(dicom_path))
-                    print(parent_dirname)
-                    # if parent_dirname == 'Axial':
-                    #     accession_number = subj_id + '_' + parent_dirname
-                    # elif parent_dirname == 'Coronal':
-                    #     accession_number = subj_id + '_' + parent_dirname
-                    # else:
-                    #     print('Wrong parent_dirname')
-                    # # print(subj_id, accession_number)
-                    # dicom_instance = dcmread(dicom_path)
-                    # dicom_instance.PatientID = dicom_instance.PatientName = subj_id
-                    # dicom_instance.AccessionNumber = accession_number
-                    # dicom_instance.save_as(dicom_path)
-                    UploadFile(dicom_path)
+                    overwrite_dicom_header(study_instance_uid_dict, dicom_path)
+                    upload_dicom_image(dicom_path)
                 except OSError as err:
                     sys.stdout.write("OS error: {0}".format(err))
                 except:
