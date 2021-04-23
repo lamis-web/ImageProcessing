@@ -21,8 +21,9 @@ PULMORAD_ROOT_UID = '1.2.826.0.1.3680043.8.499.'
 
 
 def parse_string_from_dicom_path(dicom_path) -> str:
-    target = os.path.basename(os.path.dirname(dicom_path))
-    return target
+    study_name = os.path.basename(os.path.dirname(os.path.dirname(dicom_path)))
+    series_name = os.path.basename(os.path.dirname(dicom_path))
+    return study_name, series_name
 
 
 def int_uuid_generator() -> uuid.UUID:
@@ -82,18 +83,19 @@ def overwrite_dicom_header(study_instance_uid_dict: Dict, dicom_path: str):
         study_instance_uid_dict (Dict): [store {study_name:uid}]
         dicom_path (str): [dicom instance path]
     """
-    study_name = parse_string_from_dicom_path(dicom_path)
+    study_name, series_name = parse_string_from_dicom_path(dicom_path)
     if study_name not in study_instance_uid_dict:
         uid = PULMORAD_ROOT_UID + str(int_uuid_generator())
         study_instance_uid_dict[study_name] = uid
-        print(study_instance_uid_dict.get(study_name))
+        #print(study_instance_uid_dict.get(study_name))
 
     dicom_instance = dcmread(dicom_path)
     dicom_instance.StudyInstanceUID = study_instance_uid_dict[study_name]
     dicom_instance.PatientName = study_name
     # dicom_instance.AccessionNumber = accession_number
+    # print(study_name, series_name)
+    dicom_instance.SeriesDescription = dicom_instance.SeriesDescription + ' - ' + series_name    
     dicom_instance.save_as(dicom_path)
-
 
 if __name__ == '__main__':
     dicom_directory = sys.argv[1]
