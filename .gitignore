@@ -1,5 +1,6 @@
 .direnv/
 .envrc
+sample_dicom/
 
 dicomread.py
 analyze_to_dicom.py
