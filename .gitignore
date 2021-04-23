@@ -1,0 +1,6 @@
+.direnv/
+.envrc
+
+dicomread.py
+analyze_to_dicom.py
+analyze_and_nii_to_dicom.py
