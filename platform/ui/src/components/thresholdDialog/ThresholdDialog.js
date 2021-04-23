@@ -137,25 +137,16 @@ class ThresholdDialog extends PureComponent {
     this.valueWindowManual.current.value = parseInt(value);
   };
 
-  onAirClick = () => {
-    let val = this.calcLevelWindow(-1024, -800);
-    this.onButtonClick(val);
+  onLungClick = () => {
+    // let val = this.calcLevelWindow(-1024, -800);
+    this.onButtonClick([-500, 1500]);
   };
 
-  onDPIClick = () => {
-    let val = this.calcLevelWindow(-800, -200);
-    this.onButtonClick(val);
+  onEmphysemaClick = () => {
+    // let val = this.calcLevelWindow(-800, -200);
+    this.onButtonClick([-700, 750]);
   };
 
-  onTissueClick = () => {
-    let val = this.calcLevelWindow(-200, 250);
-    this.onButtonClick(val);
-  };
-
-  onBoneClick = () => {
-    let val = this.calcLevelWindow(250, 3071);
-    this.onButtonClick(val);
-  };
 
   onButtonClick = (val) => {
     this.props.onPresetClick(val[0], val[1]);
@@ -221,18 +212,11 @@ class ThresholdDialog extends PureComponent {
           <div className="threshold-content preset-content">
             <span className="thresholdPreset">Preset:</span>
             <div className="preset-button">
-              <button className="btn" onClick={this.onAirClick}>
-                Air
+              <button className="btn" onClick={this.onLungClick}>
+                Lung
               </button>
-              <button className="btn" onClick={this.onDPIClick}>
-                DPI
-              </button>
-
-              <button className="btn" onClick={this.onTissueClick}>
-                Tissue
-              </button>
-              <button className="btn" onClick={this.onBoneClick}>
-                Bone
+              <button className="btn" onClick={this.onEmphysemaClick}>
+                Emphysema Narrow
               </button>
             </div>
           </div>
