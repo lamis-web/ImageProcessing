@@ -2,6 +2,7 @@ import OHIF from '@ohif/core';
 import { SimpleDialog } from '@ohif/ui';
 import cornerstone from 'cornerstone-core';
 import csTools from 'cornerstone-tools';
+import { cornerstoneWADOImageLoader } from 'cornerstone-wado-image-loader';
 import merge from 'lodash.merge';
 import initCornerstoneTools from './initCornerstoneTools.js';
 import measurementServiceMappingsFactory from './utils/measurementServiceMappings/measurementServiceMappingsFactory';
@@ -15,7 +16,6 @@ import measurementServiceMappingsFactory from './utils/measurementServiceMapping
  */
 export default function init({ servicesManager, configuration }) {
   const { UIDialogService, MeasurementService } = servicesManager.services;
-
   // - Annotation을 넣을때, UI. 작동 안됨.
   // const callInputDialog = (data, event, callback) => {
   //   if (UIDialogService) {
@@ -59,7 +59,11 @@ export default function init({ servicesManager, configuration }) {
     autoResizeViewports: false,
   };
 
+  // Initialize cornerstone tools here
   initCornerstoneTools(defaultCsToolsConfig);
+
+  // --> able to analyze csTools like this. csTools.ArrowAnnotateTool.name
+  console.log(csTools.ArrowAnnotateTool)
 
   const toolsGroupedByType = {
     touch: [csTools.PanMultiTouchTool, csTools.ZoomTouchPinchTool],

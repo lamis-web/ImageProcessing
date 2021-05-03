@@ -323,7 +323,6 @@ function _handleToolbarButtonClick(button, evt, props) {
       ({ options }) => options && !options.togglable
     );
     this.setState({ activeButtons: [...toggables, button] });
-    console.log(toggables, button, activeButtons);
   } else if (button.type === 'builtIn') {
     this._handleBuiltIn(button);
   }
