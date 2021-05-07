@@ -6,7 +6,7 @@ import sys
 
 def is_dicom(file):
     file_extension = file.split('.')[-1]
-    return file_extension == 'dcm'
+    return file_extension == 'dcm' or file_extension == 'DCM'
 
     
 # MAIN
