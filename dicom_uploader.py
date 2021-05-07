@@ -1,7 +1,3 @@
-
-import glob 
-import argparse
-import getpass
 import os
 import sys
 import httplib2
@@ -9,6 +5,19 @@ import base64
 import uuid
 from typing import Dict
 from pydicom import dcmread
+
+if len(sys.argv) != 4:
+    print("Usage: python %s [dicom_directory] [orthanc_username] [orthanc_password]" % (
+        sys.argv[0]))
+    sys.exit(0)
+
+HOST_URL = '127.0.0.1'
+ORTHANC_PORT = 8042
+ORTHANC_URL = 'http://%s:%d/instances' % (HOST_URL, ORTHANC_PORT)
+SUCCESS_COUNT = 0
+TOTAL_COUNT = 0
+FAILURE_PATH = []
+PULMORAD_ROOT_UID = '1.2.826.0.1.3680043.8.499.'
 
 
 def parse_string_from_dicom_path(dicom_path) -> str:
@@ -25,10 +34,8 @@ def is_dicom(file):
     file_extension = file.split('.')[-1]
     return file_extension == 'dcm'
 
-    
 
-
-def upload_dicom_image(dicom_path: str, username: str, password: str):
+def upload_dicom_image(dicom_path: str):
     """[Upload single instance of DICOM image(.dcm)]
 
     Args:
@@ -47,8 +54,8 @@ def upload_dicom_image(dicom_path: str, username: str, password: str):
             h = httplib2.Http()
             headers = {'content-type': 'application/dicom'}
 
-            # username = sys.argv[2]
-            # password = sys.argv[3]
+            username = sys.argv[2]
+            password = sys.argv[3]
             creds_str = username + ':' + password
             creds_str_bytes = creds_str.encode("ascii")
             creds_str_bytes_b64 = b'Basic ' + base64.b64encode(creds_str_bytes)
@@ -69,7 +76,6 @@ def upload_dicom_image(dicom_path: str, username: str, password: str):
             sys.stdout.write(" => unable to connect\n")
 
 
-# TODO: add more overwriting information functions here
 def overwrite_dicom_header(study_instance_uid_dict: Dict, dicom_path: str):
     """[Overwrite dicom headers of interest with processed value]
 
@@ -84,39 +90,15 @@ def overwrite_dicom_header(study_instance_uid_dict: Dict, dicom_path: str):
         #print(study_instance_uid_dict.get(study_name))
 
     dicom_instance = dcmread(dicom_path)
-
-    # override data information
     dicom_instance.StudyInstanceUID = study_instance_uid_dict[study_name]
-    dicom_instance.PatientName = study_name
+    # dicom_instance.PatientName = study_name
     # dicom_instance.AccessionNumber = accession_number
+    # print(study_name, series_name)
     dicom_instance.SeriesDescription = dicom_instance.SeriesDescription + ' - ' + series_name    
     dicom_instance.save_as(dicom_path)
 
-
-
-# MAIN
 if __name__ == '__main__':
-    # argparse
-    parser = argparse.ArgumentParser(description='Dicom Image Uploader \n ------------------------------')
-    parser.add_argument('dir', type=str,
-                        help='Parent directory of Axial/Coronal folder that contains .dcm files')
-    args = parser.parse_args()
-
-    dicom_directory = args.dir
-    print('Trying to upload dcm files in ' + dicom_directory + '\n')
-    orthanc_username = input("ORTHANC ID: ")
-    orthanc_password = getpass.getpass("ORTHANC PW: ")
-
-    # VARIABLES TO CONNECT ORTHANC
-    HOST_URL = '127.0.0.1'
-    ORTHANC_PORT = 8042
-    ORTHANC_URL = 'http://%s:%d/instances' % (HOST_URL, ORTHANC_PORT)
-    SUCCESS_COUNT = 0
-    TOTAL_COUNT = 0
-    FAILURE_PATH = []
-    PULMORAD_ROOT_UID = '1.2.826.0.1.3680043.8.499.'
-
-
+    dicom_directory = sys.argv[1]
     study_instance_uid_dict: Dict = {}
     # Recursively upload all .dcm files in dicom_directory
     for root, dirs, files in os.walk(dicom_directory):
@@ -125,7 +107,7 @@ if __name__ == '__main__':
                 dicom_path = os.path.join(root, file)
                 try:
                     overwrite_dicom_header(study_instance_uid_dict, dicom_path)
-                    upload_dicom_image(dicom_path, orthanc_username, orthanc_password)
+                    upload_dicom_image(dicom_path)
                 except OSError as err:
                     sys.stdout.write("OS error: {0}".format(err))
                 except:
