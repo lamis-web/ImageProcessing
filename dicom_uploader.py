@@ -84,17 +84,18 @@ def overwrite_dicom_header(study_instance_uid_dict: Dict, dicom_path: str):
         dicom_path (str): [dicom instance path]
     """
     study_name, series_name = parse_string_from_dicom_path(dicom_path)
+    print(study_name)
     if study_name not in study_instance_uid_dict:
         uid = PULMORAD_ROOT_UID + str(int_uuid_generator())
         study_instance_uid_dict[study_name] = uid
         #print(study_instance_uid_dict.get(study_name))
 
     dicom_instance = dcmread(dicom_path)
-    dicom_instance.StudyInstanceUID = study_instance_uid_dict[study_name]
+    # dicom_instance.StudyInstanceUID = study_instance_uid_dict[study_name]
     # dicom_instance.PatientName = study_name
     # dicom_instance.AccessionNumber = accession_number
     # print(study_name, series_name)
-    dicom_instance.SeriesDescription = dicom_instance.SeriesDescription + ' - ' + series_name    
+    # dicom_instance.SeriesDescription = dicom_instance.SeriesDescription + ' - ' + series_name    
     dicom_instance.save_as(dicom_path)
 
 if __name__ == '__main__':
@@ -106,7 +107,7 @@ if __name__ == '__main__':
             if is_dicom(file):
                 dicom_path = os.path.join(root, file)
                 try:
-                    overwrite_dicom_header(study_instance_uid_dict, dicom_path)
+                    # overwrite_dicom_header(study_instance_uid_dict, dicom_path)
                     upload_dicom_image(dicom_path)
                 except OSError as err:
                     sys.stdout.write("OS error: {0}".format(err))
