@@ -24,3 +24,18 @@ optional arguments:
                         get all the instances from orthanc server
   --studies STUDIES [STUDIES ...], -i STUDIES [STUDIES ...]
 ```
+
+- ```--patients```: Patient Name/ID 
+- ```--studies``` : Studies ID (StudyInstanceUID)
+
+### Example
+```shell
+# Delete all patient ID: ILACG0001
+$ python3 orthanc_manager.py --patients ILACG000X
+
+# Delete all patient ID that is from CG
+$ python3 orthanc_manager.py --patients CG
+
+# Delete all
+$ python3 orthanc_manager.py --patients ILA
+```

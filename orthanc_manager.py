@@ -13,7 +13,7 @@ from progress.bar import IncrementalBar
 
 URL = 'http://localhost:8042/'
 
-
+# Exception
 class OrthancRequestException(Exception):
     '''
     Exception raised when the orthanc request fails.
@@ -36,6 +36,9 @@ class OrthancIdNameMatchException(Exception):
 
     def __str__(self):
         return f'Orthanc Server has the data that Patient ID and Patient Name does not match\nID   : {self.id}\nName : {self.name}\nIt is better to fix the issue first rather than deleting'
+
+
+
 
 
 def delete(patients, studies):
@@ -135,14 +138,15 @@ def scan(patients, studies):
                 
 
 
-
-
 def info(patients, studies):
     print("Info coming soon...")
 
+
+
+
 # MAIN
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser = argparse.ArgumentParser(description='Orthanc Manager')
     parser.add_argument('--patients', '-p', nargs='+',
                         help='get all the instances from orthanc server')
     parser.add_argument('--studies', '-i', nargs='+',
