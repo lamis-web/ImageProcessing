@@ -13,7 +13,7 @@ from progress.bar import IncrementalBar
 
 URL = 'http://localhost:8042/'
 
-# Exception
+
 class OrthancRequestException(Exception):
     '''
     Exception raised when the orthanc request fails.
@@ -24,7 +24,6 @@ class OrthancRequestException(Exception):
 
     def __str__(self):
         return 'Cannot connect to Orthanc server. CODE: ' + str(self.status_code)
-
 
 class OrthancIdNameMatchException(Exception):
     '''
