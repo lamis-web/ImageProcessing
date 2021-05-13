@@ -5,7 +5,7 @@
   "useWorkspaces": true,
   "command": {
     "publish": {
-      "ignoreChanges": ["*.md", "*.yml", "*.spec.js", "*.test.js"],
+      "igno reChanges": ["*.md", "*.yml", "*.spec.js", "*.test.js"],
       "message": "chore(release): publish"
     },
     "version": {

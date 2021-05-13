@@ -82,7 +82,7 @@ function Header(props) {
             <Link
               className="header-btn header-studyListLinkSection"
               to={{
-                pathname: linkPath,
+                pathname: '/studylist',
                 state: { studyLink: location.pathname },
               }}
             >

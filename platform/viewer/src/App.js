@@ -31,6 +31,9 @@ import {
   redux as reduxOHIF,
 } from '@ohif/core';
 
+import axios from 'axios';
+import FormData from 'form-data';
+
 import i18n from '@ohif/i18n';
 
 // TODO: This should not be here
@@ -56,6 +59,7 @@ import store from './store';
 /** Contexts */
 import WhiteLabelingContext from './context/WhiteLabelingContext';
 import UserManagerContext from './context/UserManagerContext';
+import UserAuthContext from './context/UserAuthContext';
 import { AppProvider, useAppContext, CONTEXTS } from './context/AppContext';
 
 /** ~~~~~~~~~~~~~ Application Setup */
@@ -81,6 +85,15 @@ window.ohif.app = {
   servicesManager,
   extensionManager,
 };
+
+const FastAPI_URL =
+  process.env.NODE_ENV == 'production'
+    ? process.env.PROD_FastAPI_URL
+    : process.env.DEV_FastAPI_URL;
+
+const axios_withCredentials = axios.create({
+  withCredentials: true,
+});
 
 class App extends Component {
   static propTypes = {
@@ -158,7 +171,31 @@ class App extends Component {
     _initHotkeys(appConfigHotkeys);
     _initServers(servers);
     initWebWorkers();
+
+    this.state = {
+      username: '',
+      logged_in: false,
+    };
   }
+
+  handle_login = (e, username, password) => {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    params.append('grant_type', 'password');
+    params.append('username', username);
+    params.append('password', password);
+
+    axios_withCredentials
+      .post(FastAPI_URL + '/login', params)
+      .then(response => {
+        this.setState({ username: response.data.username, logged_in: true });
+      });
+  };
+
+  handle_logout = () => {
+    this.setState({ username: '', logged_in: false });
+  };
+
 
   render() {
     const { whiteLabeling, routerBasename } = this._appConfig;
@@ -210,22 +247,31 @@ class App extends Component {
         <Provider store={store}>
           <AppProvider config={this._appConfig}>
             <I18nextProvider i18n={i18n}>
-              <Router basename={routerBasename}>
-                <WhiteLabelingContext.Provider value={whiteLabeling}>
-                  <LoggerProvider service={LoggerService}>
-                    <SnackbarProvider service={UINotificationService}>
-                      <DialogProvider service={UIDialogService}>
-                        <ModalProvider
-                          modal={OHIFModal}
-                          service={UIModalService}
-                        >
-                          <OHIFStandaloneViewer />
-                        </ModalProvider>
-                      </DialogProvider>
-                    </SnackbarProvider>
-                  </LoggerProvider>
-                </WhiteLabelingContext.Provider>
-              </Router>
+              <UserAuthContext.Provider
+                vlaue={{
+                  state: this.state,
+                  login: (e, username, password) =>
+                    this.handle_login(e, username, password),
+                  logout: this.handle_logout,
+                }}
+              >
+                <Router basename={routerBasename}>
+                  <WhiteLabelingContext.Provider value={whiteLabeling}>
+                    <LoggerProvider service={LoggerService}>
+                      <SnackbarProvider service={UINotificationService}>
+                        <DialogProvider service={UIDialogService}>
+                          <ModalProvider
+                            modal={OHIFModal}
+                            service={UIModalService}
+                          >
+                            <OHIFStandaloneViewer />
+                          </ModalProvider>
+                        </DialogProvider>
+                      </SnackbarProvider>
+                    </LoggerProvider>
+                  </WhiteLabelingContext.Provider>
+                </Router>
+              </UserAuthContext.Provider>
             </I18nextProvider>
           </AppProvider>
         </Provider>

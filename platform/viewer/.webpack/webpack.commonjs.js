@@ -31,7 +31,16 @@ module.exports = (env, argv) => {
       filename: 'index.umd.js',
     },
     module: {
-      rules: [fontsToJavaScriptRule],
+      rules: [fontsToJavaScriptRule,
+        {
+          test: /\.(png|jpe?g|gif)$/i,
+          use: [
+            {
+              loader: 'file-loader',
+            },
+          ],
+        },
+      ],
     },
     plugins: [
       // Clean output.path

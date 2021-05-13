@@ -43,7 +43,16 @@ module.exports = (env, argv) => {
       publicPath: PUBLIC_URL, // Used by HtmlWebPackPlugin for asset prefix
     },
     module: {
-      rules: [...extractStyleChunksRule(isProdBuild)],
+      rules: [...extractStyleChunksRule(isProdBuild),
+        {
+          test: /\.(png|jpe?g|gif)$/i,
+          use: [
+            {
+              loader: 'file-loader',
+            },
+          ],
+        },
+      ],
     },
     plugins: [
       // Uncomment to generate bundle analyzer

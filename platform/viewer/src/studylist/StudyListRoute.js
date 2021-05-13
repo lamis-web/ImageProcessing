@@ -15,16 +15,53 @@ import * as RoutesUtil from '../routes/routesUtil';
 import moment from 'moment';
 import ConnectedDicomFilesUploader from '../googleCloud/ConnectedDicomFilesUploader';
 import ConnectedDicomStorePicker from '../googleCloud/ConnectedDicomStorePicker';
-import filesToStudies from '../lib/filesToStudies.js';
+// import filesToStudies from '../lib/filesToStudies.js';
 
 // Contexts
 import UserManagerContext from '../context/UserManagerContext';
 import WhiteLabelingContext from '../context/WhiteLabelingContext';
 import AppContext from '../context/AppContext';
 
+// Dropdown Button
+import { makeStyles } from '@material-ui/core/styles';
+import FormControl from '@material-ui/core/FormControl';
+import NativeSelect from '@material-ui/core/NativeSelect';
+
+import axios from 'axios';
+import Button from '@material-ui/core/Button';
+import StudyManageDialog from './StudyManageDialog.js';
+
+import Snackbar from '@material-ui/core/Snackbar';
+import Alert from '@material-ui/lab/Alert';
+
+import useSWR from 'swr';
+import {
+  parseProjectList,
+  parseStudiesByProject,
+} from './parsingUtil/Parser.js';
+
+const useStyles = makeStyles(theme => ({
+  formControl: {
+    color: 'white',
+    marginTop: theme.spacing(0.5),
+    marginLeft: theme.spacing(2),
+    minWidth: 120,
+  },
+  selectEmpty: {
+    color: 'white',
+  },
+  snackBar: {
+    width: '100%',
+    '& > * + *': {
+      marginTop: theme.spacing(2),
+    },
+  },
+}));
+
 const { urlUtil: UrlUtil } = OHIF.utils;
 
 function StudyListRoute(props) {
+  const classes = useStyles();
   const { history, server, user, studyListFunctionsEnabled } = props;
   const [t] = useTranslation('Common');
   // ~~ STATE
@@ -53,7 +90,7 @@ function StudyListRoute(props) {
     error: null,
   });
   const [activeModalId, setActiveModalId] = useState(null);
-  const [rowsPerPage, setRowsPerPage] = useState(25);
+  const [rowsPerPage, setRowsPerPage] = useState(100);
   const [pageNumber, setPageNumber] = useState(0);
   const appContext = useContext(AppContext);
   // ~~ RESPONSIVE
@@ -78,6 +115,15 @@ function StudyListRoute(props) {
     setActiveModalId('DicomStorePicker');
   }
 
+  const FastAPI_URL =
+    process.env.NODE_ENV == 'production'
+      ? process.env.PROD_FastAPI_URL
+      : process.env.DEV_FastAPI_URL;
+
+  const [studyDict, setStudyDict] = useState({});
+
+  const initGridFetcher = url => axios.get(url).then(res => res.data);
+  const { data } = useSWR(FastAPI_URL + '/initgrid/', initGridFetcher);
   // Called when relevant state/props are updated
   // Watches filters and sort, debounced
   useEffect(
@@ -94,11 +140,10 @@ function StudyListRoute(props) {
             pageNumber,
             displaySize
           );
-
           setStudies(response);
+          setStudyDict(parseStudiesByProject(data, response));
           setSearchStatus({ error: null, isSearchingForStudies: false });
         } catch (error) {
-          console.warn(error);
           setSearchStatus({ error: true, isFetching: false });
         }
       };
@@ -116,6 +161,7 @@ function StudyListRoute(props) {
       pageNumber,
       displaySize,
       server,
+      data,
     ]
   );
 
@@ -128,14 +174,39 @@ function StudyListRoute(props) {
   //   });
   // }
 
-  const onDrop = async acceptedFiles => {
-    try {
-      const studiesFromFiles = await filesToStudies(acceptedFiles);
-      setStudies(studiesFromFiles);
-    } catch (error) {
-      setSearchStatus({ isSearchingForStudies: false, error });
-    }
+  const [openSnackBar, setSnackBar] = useState(false);
+
+  const handleSnackBarClose = event => {
+    event.stopPropagation();
+    setSnackBar(false);
   };
+
+  const [project, setProject] = useState('All');
+
+  useEffect(() => {
+    if (project in studyDict) {
+      setStudies(studyDict[project]);
+    } else {
+      setStudies([]);
+    }
+  }, [project, studyDict]);
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const openDialog = () => {
+    setDialogOpen(true);
+  };
+  const closeDialog = () => {
+    setDialogOpen(false);
+  };
+
+  // const onDrop = async acceptedFiles => {
+  //   try {
+  //     const studiesFromFiles = await filesToStudies(acceptedFiles);
+  //     setStudies(studiesFromFiles);
+  //   } catch (error) {
+  //     setSearchStatus({ isSearchingForStudies: false, error });
+  //   }
+  // };
 
   if (searchStatus.error) {
     return <div>Error: {JSON.stringify(searchStatus.error)}</div>;
@@ -227,10 +298,52 @@ function StudyListRoute(props) {
         )}
       </WhiteLabelingContext.Consumer>
       <div className="study-list-header">
-        <div className="header">
-          <h1 style={{ fontWeight: 300, fontSize: '22px' }}>
-            {t('StudyList')}
+        <div
+          className="header"
+          style={{ display: 'flex', alignItems: 'Center' }}
+        >
+          <h1
+            style={{
+              fontWeight: 300,
+              fontSize: '22px',
+            }}
+          >
+            Project List :
           </h1>
+          <FormControl className={classes.formControl}>
+            <NativeSelect
+              value={project}
+              onChange={e => {
+                setProject(e.target.value);
+              }}
+              inputProps={{
+                name: 'age',
+                id: 'age-native-helper',
+              }}
+              style={{ color: 'white' }}
+            >
+              <option
+                key={'All'}
+                aria-label="None"
+                style={{ backgroundColor: '#2c363f' }}
+              >
+                All
+              </option>
+              {data &&
+                parseProjectList(data).map(project => (
+                  <option key={project} style={{ backgroundColor: '#2c363f' }}>
+                    {project}
+                  </option>
+                ))}
+              <option
+                key={'Unassigned'}
+                aria-label="None"
+                style={{ backgroundColor: '#2c363f' }}
+              >
+                Unassigned
+              </option>
+            </NativeSelect>
+          </FormControl>
         </div>
         <div className="actions">
           {studyListFunctionsEnabled && healthCareApiButtons}
@@ -239,6 +352,23 @@ function StudyListRoute(props) {
               onImport={() => setActiveModalId('DicomFilesUploader')}
             />
           )}
+          <Button
+            variant="contained"
+            size="small"
+            style={{ margin: '2vh' }}
+            onClick={openDialog}
+          >
+            <span>Manage Study</span>
+          </Button>
+          {data && (
+            <StudyManageDialog
+              open={dialogOpen}
+              onClose={closeDialog}
+              projectList={data[0]}
+              studyDict={studyDict}
+            />
+          )}
+
           <span className="study-count">{studies.length}</span>
         </div>
       </div>
@@ -274,6 +404,17 @@ function StudyListRoute(props) {
           rowsPerPage={rowsPerPage}
           recordCount={studies.length}
         />
+      </div>
+      <div className={classes.snackBar}>
+        <Snackbar
+          open={openSnackBar}
+          autoHideDuration={6000}
+          onClose={handleSnackBarClose}
+        >
+          <Alert severity="warning" onClose={handleSnackBarClose}>
+            The project you select is empty!
+          </Alert>
+        </Snackbar>
       </div>
     </>
   );
@@ -336,6 +477,12 @@ async function getStudyList(
   } = filters;
   const sortFieldName = sort.fieldName || 'PatientName';
   const sortDirection = sort.direction || 'desc';
+  const studyDateFrom =
+    filters.studyDateFrom ||
+    moment()
+      .subtract(25000, 'days')
+      .toDate();
+  const studyDateTo = filters.studyDateTo || new Date();
 
   const mappedFilters = {
     PatientID: filters.PatientID,
@@ -344,8 +491,8 @@ async function getStudyList(
     StudyDescription: filters.StudyDescription,
     ModalitiesInStudy: filters.modalities,
     // NEVER CHANGE
-    studyDateFrom: filters.studyDateFrom,
-    studyDateTo: filters.studyDateTo,
+    studyDateFrom,
+    studyDateTo,
     limit: rowsPerPage,
     offset: pageNumber * rowsPerPage,
     fuzzymatching: server.supportsFuzzyMatching === true,
@@ -364,7 +511,7 @@ async function getStudyList(
 
     return {
       AccessionNumber: study.AccessionNumber, // "1"
-      modalities: study.modalities, // "SEG\\MR"  ​​
+      modalities: study.modalities, // "SEG\\MR"
       // numberOfStudyRelatedInstances: "3"
       // numberOfStudyRelatedSeries: "3"
       // PatientBirthdate: undefined

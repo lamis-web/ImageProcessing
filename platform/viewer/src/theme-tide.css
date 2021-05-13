@@ -7,6 +7,7 @@
  */
 
 :root {
+    background-color: black;
     /* Interface UI Colors */
     --default-color: #9CCEF9;
     --hover-color: #ffffff;

@@ -7,10 +7,10 @@ window.config = {
   servers: {
     dicomWeb: [
       {
-        name: 'DCM4CHEE',
-        wadoUriRoot: 'https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/wado',
-        qidoRoot: 'https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs',
-        wadoRoot: 'https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs',
+        name: 'Orthanc',
+        wadoUriRoot: '/orthanc/wado',
+        qidoRoot: '/orthanc/dicom-web',
+        wadoRoot: '/orthanc/dicom-web',
         qidoSupportsIncludeField: true,
         imageRendering: 'wadors',
         thumbnailRendering: 'wadors',

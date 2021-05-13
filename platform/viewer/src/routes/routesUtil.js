@@ -29,6 +29,10 @@ const ViewerLocalFileData = asyncComponent(() =>
   ))
 );
 
+const MainPage = asyncComponent(() =>
+  import(/* webpackChunkName: "ViewerLocalFileData" */ '../mainPage/main.js')
+);
+
 const reload = () => window.location.reload();
 
 const ROUTES_DEF = {
@@ -42,7 +46,11 @@ const ROUTES_DEF = {
       component: StandaloneRouting,
     },
     list: {
-      path: ['/studylist', '/'],
+      path: '/',
+      component: MainPage,
+    },
+    study: {
+      path: '/studylist',
       component: StudyListRouting,
       condition: appConfig => {
         return appConfig.showStudyList;
