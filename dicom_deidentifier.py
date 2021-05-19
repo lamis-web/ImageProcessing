@@ -7,6 +7,7 @@
 # ##############################################################################
 
 from pydicom import dcmread
+from random import randint
 import os
 import sys
 import shutil
@@ -35,9 +36,13 @@ dicom_paths = [os.path.join(out_dicom_folder_path,dcm) for dcm in os.listdir(out
 for dicom_path in dicom_paths:
     dicom_instance = dcmread(dicom_path)
     dicom_instance.PatientName = subj_ID
-    
+    dicom_instance.PatientID = subj_ID
+    dicom_instance.PatientBirthDate = str(int(dicom_instance.PatientBirthDate) + (randint(1, 500) * 10000))
+    dicom_instance.AccessionNumber = subj_ID + "_" + img_ID
+    dicom_instance.StudyDate = str(int(dicom_instance.StudyDate) + (randint(1, 30)))
+    dicom_instance.SeriesDate = dicom_instance.AcquisitionDate = dicom_instance.ContentDate = dicom_instance.StudyDate
+
     # Change all metadata here #
-    # dicom_instance.PatientID
     # dicom_instance.AccessionNumber
     # dicom_instance.StudyInstanceUID
     # dicom_instance.SeriesInstanceUID
@@ -74,7 +79,6 @@ for dicom_path in dicom_paths:
     # dicom_instance.PhysicianReadingStudyIDSequence
     # dicom_instance.OperatorsName
     # dicom_instance.IssuerOfPatientID
-    # dicom_instance.PatientBirthDate
     # dicom_instance.PatientBirthTime
     # dicom_instance.PatientSex
     # dicom_instance.OtherPatientIDs
