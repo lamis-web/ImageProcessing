@@ -212,6 +212,8 @@ class App:
                 series_description = ds.SeriesDescription.split(
                     ' - ')[0] + ' - ' + info[3]
             ds.SeriesDescription = series_description
+        print(dicom_path)
+        ds.save_as(dicom_path)
 
     # def check_uploaded(self, file):
     #   TODO: check patient if the item is uploaded
