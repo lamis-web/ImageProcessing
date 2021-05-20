@@ -65,7 +65,7 @@ if __name__ == '__main__':
                 ds.PatientID = sys.argv[2]
                 ds.PatientName = sys.argv[2]
                 ds.AccessionNumber = sys.argv[3]
-                ds.StudyInstanceUID = uid
+                # ds.StudyInstanceUID = uid
                 ds.save_as(os.path.join(root, file))
                 print(os.path.join(root, file) + ' ==> Overwriting ...    ' + uid)
             else:
