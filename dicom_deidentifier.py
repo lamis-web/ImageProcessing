@@ -45,54 +45,58 @@ for dicom_path in dicom_paths:
     
     if dicom_instance.get('PatientName'):
         dicom_instance.PatientName = subj_ID
-        logger.info(f'{dicom_path}: PatientName Header Processed')
+        logger.info(f'{dicom_path} - PatientName Header Processed')
     else:
-        logger.error(f'{dicom_path}: PatientName Header does not exist')
+        logger.error(f'{dicom_path} - PatientName Header does not exist')
+        continue
 
     if dicom_instance.get('PatientID'):
 	    dicom_instance.PatientID = subj_ID
-        logger.info(f'{dicom_path}: PatientID Header Processed')
+        logger.info(f'{dicom_path} - PatientID Header Processed')
     else:
-        logger.error(f'{dicom_path}: PatientID Header does not exist')
+        logger.error(f'{dicom_path} - PatientID Header does not exist')
+        continue
 
     if dicom_instance.get('PatientBirthDate'):
 	    dicom_instance.PatientBirthDate = str(int(dicom_instance.PatientBirthDate) + (randint(1, 500) * 10000))
-        logger.info(f'{dicom_path}: PatientBirthDate Header Processed')
+        logger.info(f'{dicom_path} - PatientBirthDate Header Processed')
     else:
-        logger.error(f'{dicom_path}: PatientBirthDate Header does not exist')
+        logger.error(f'{dicom_path} - PatientBirthDate Header does not exist')
+        continue
     
     if dicom_instance.get('AccessionNumber'):
 	    dicom_instance.AccessionNumber = subj_ID + "_" + img_ID
-        logger.info(f'{dicom_path}: AccessionNumber Header Processed')
+        logger.info(f'{dicom_path} - AccessionNumber Header Processed')
     else:
-        logger.error(f'{dicom_path}: AccessionNumber Header does not exist')
+        logger.error(f'{dicom_path} - AccessionNumber Header does not exist')
+        continue
 
     if dicom_instance.get('StudyDate'):
 	    dicom_instance.StudyDate = str(int(dicom_instance.StudyDate) + (randint(1, 30)))
-        logger.info(f'{dicom_path}: StudyDate Header Processed')
+        logger.info(f'{dicom_path} - StudyDate Header Processed')
     else:
-        logger.error(f'{dicom_path}: StudyDate Header does not exist')
+        logger.error(f'{dicom_path} - StudyDate Header does not exist')
+        continue
 
     if dicom_instance.get('SeriesDate'):
         dicom_instance.SeriesDate = dicom_instance.StudyDate
     else:
-        logger.warn(f'{dicom_path}: SeriesDate Header does not exist: Appending Header')
+        logger.warn(f'{dicom_path} - SeriesDate Header does not exist: Appending Header')
         dicom_instance.add_new([0x0008, 0x0021], dictionary_VR([0x0008, 0x0021]), dicom_instance.StudyDate)
 
     if dicom_instance.get('AcquisitionDate'):
         dicom_instance.AcquisitionDate = dicom_instance.StudyDate
     else:
-        logger.warn(f'{dicom_path}: AcquisitionDate Header does not exist: Appending Header')
+        logger.warn(f'{dicom_path} - AcquisitionDate Header does not exist: Appending Header')
         dicom_instance.add_new([0x0008, 0x0022], dictionary_VR([0x0008, 0x0022]), dicom_instance.StudyDate)
 
     if dicom_instance.get('ContentDate'):
         dicom_instance.ContentDate = dicom_instance.ContentDate
     else:
-        logger.warn(f'{dicom_path}: ContentDate Header does not exist: Appending Header')
+        logger.warn(f'{dicom_path} - ContentDate Header does not exist: Appending Header')
         dicom_instance.add_new([0x0008, 0x0023], dictionary_VR([0x0008, 0x0023]), dicom_instance.StudyDate)
 
     # Change all metadata here #
-    # dicom_instance.AccessionNumber
     # dicom_instance.StudyInstanceUID
     # dicom_instance.SeriesInstanceUID
     # dicom_instance.SOPInstanceUID
@@ -100,10 +104,6 @@ for dicom_path in dicom_paths:
     # dicom_instance.SeriesDescription
     
     # Sanitize all metadata here #
-    # dicom_instance.StudyDate
-    # dicom_instance.SeriesDate
-    # dicom_instance.AcquisitionDate
-    # dicom_instance.ContentDate
     # dicom_instance.OverlayDate
     # dicom_instance.CurveDate
     # dicom_instance.AcquisitionDatetime
@@ -128,7 +128,6 @@ for dicom_path in dicom_paths:
     # dicom_instance.PhysicianReadingStudyIDSequence
     # dicom_instance.OperatorsName
     # dicom_instance.IssuerOfPatientID
-    # dicom_instance.PatientBirthTime
     # dicom_instance.PatientSex
     # dicom_instance.OtherPatientIDs
     # dicom_instance.OtherPatientNames
