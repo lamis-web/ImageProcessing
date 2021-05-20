@@ -223,7 +223,7 @@ class App:
         function updates the dicom header.
         '''
         bar = IncrementalBar(
-            f'\n>>> {self.dicom_count} Dicom header is updating ... ', max=self.dicom_count)
+            f'>>> {self.dicom_count} Dicom header is updating ... ', max=self.dicom_count)
         for root, dirs, files in os.walk(self.dir):
             for file in files:
                 if is_dicom(file):
@@ -241,24 +241,62 @@ class App:
                     bar.next()
         bar.finish()
 
+    def upload_dicom_image(self, dicom_path: str):
+        """[Upload single instance of DICOM image(.dcm)]
+
+        Args:
+            dicom_path ([str]): [path to the single DICOM image]
+        """
+        with open(dicom_path, 'rb') as dicom_image:
+            content = dicom_image.read()
+
+            try:
+                # sys.stdout.write("Importing %s" % dicom_path)
+                h = httplib2.Http()
+                headers = {'content-type': 'application/dicom'}
+
+                username = self.orthanc_username
+                password = self.orthanc_password
+                creds_str = username + ':' + password
+                creds_str_bytes = creds_str.encode("ascii")
+                creds_str_bytes_b64 = b'Basic ' + base64.b64encode(creds_str_bytes)
+                headers['authorization'] = creds_str_bytes_b64.decode("ascii")
+
+                response, content = h.request(
+                    ORTHANC_URL+'/instances', 'POST', body=content, headers=headers)
+
+                if response.status != 200:
+                    print('Unable to push ==> ' + dicom_path)
+
+            except:
+                print('Unable to connect..')
+                exit()
+
+
     def push(self):
         '''
         function push the data to the orthanc server
         '''
         
-        with IncrementalBar('\n>>> Uploading to Orthanc Server ... ', max=self.dicom_count, suffix='%(percent).1f%% - %(eta)ds') as bar:
+        with IncrementalBar('>>> Uploading to Orthanc Server ... ', max=self.dicom_count, suffix='%(percent).1f%% - %(eta)ds') as bar:
             for root, dirs, files in os.walk(self.dir):
                 for file in files:
                     if is_dicom(file):
                         dicom_path = os.path.join(root, file)
                         # self.check_uploaded(dicom_path)
+                        try:
+                            # overwrite_dicom_header(study_instance_uid_dict, dicom_path)
+                            self.upload_dicom_image(dicom_path)
+                        except OSError as err:
+                            sys.stdout.write("OS error: {0}".format(err))
+                        except:
+                            sys.stdout.write("Unexpected error:", sys.exc_info()[0])
                         bar.next()
-        print(self.success_count, self.failure_count)
 
     def start(self):
         # self.get_orthanc_data()
-        self.orthanc_username = self.args.orthanc_username
-        self.orthanc_password = self.args.orthanc_password
+        self.orthanc_username = self.args.orthanc_username[0]
+        self.orthanc_password = self.args.orthanc_password[0]
 
         for root, dirs, files in os.walk('.'):
             for file in files:
@@ -269,6 +307,7 @@ class App:
         if self.is_push:
             if push_proceed():       # ask again if user really wants to push
                 self.push()
+        print('\nDONE!!!')
 
 
 if __name__ == '__main__':
