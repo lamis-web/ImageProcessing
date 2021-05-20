@@ -11,6 +11,10 @@ from random import randint
 import os
 import sys
 import shutil
+import logging
+
+log = logging.getLogger(__name__)
+log.basicConfig(filename='dicom_identifier.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s')
 
 # src_dicom_path = '/Users/inkyu/Desktop/SNUH/data/177/dicom'
 # output_path = '/Users/inkyu/Desktop/SNUH/data/177/dicom2'
@@ -35,8 +39,19 @@ if not os.path.exists(out_dicom_folder_path):
 dicom_paths = [os.path.join(out_dicom_folder_path,dcm) for dcm in os.listdir(out_dicom_folder_path)]
 for dicom_path in dicom_paths:
     dicom_instance = dcmread(dicom_path)
-    dicom_instance.PatientName = subj_ID
-    dicom_instance.PatientID = subj_ID
+    
+    if dicom_instance.get('PatientName'):
+        dicom_instance.PatientName = subj_ID
+    else:
+        log.error('PatientName Header does not exist')
+        return
+
+    if dicom_instance.get('PatientID'):
+	dicom_instance.PatientID = subj_ID
+    
+    
+
+
     dicom_instance.PatientBirthDate = str(int(dicom_instance.PatientBirthDate) + (randint(1, 500) * 10000))
     dicom_instance.AccessionNumber = subj_ID + "_" + img_ID
     dicom_instance.StudyDate = str(int(dicom_instance.StudyDate) + (randint(1, 30)))
