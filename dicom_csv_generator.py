@@ -93,8 +93,8 @@ if __name__ == '__main__':
                     ct_date = dicom_folder_name.split('_')[1]
                     extract_dicom_header_data(dicom_path, mrn, ct_date)
 
-        csv_columns = ['patient_name', 'patient_id', 'mrn',
-                       'study_date', 'number_of_slices', 'slice_thickness', 'study_description']
+        csv_columns = ['mrn', 'study_date', 'patient_name', 'patient_id',
+                       'slice_thickness', 'number_of_slices', 'study_description']
         writer = csv.DictWriter(output_csv, fieldnames=csv_columns)
         writer.writeheader()
         for series in dicom_series:
