@@ -33,15 +33,15 @@ def extract_dicom_header_data(
         if dicom_img.get('PatientName'):
             dicom_series[series_uid]['patient_name'] = dicom_img.PatientName
         else:
-            dicom_series[series_uid]['patient_name'] = 'None'
+            dicom_series[series_uid]['patient_name'] = ''
         if dicom_img.get('PatientID'):
             dicom_series[series_uid]['patient_id'] = dicom_img.PatientName
         else:
-            dicom_series[series_uid]['patinet_id'] = "None"
+            dicom_series[series_uid]['patinet_id'] = ''
         if dicom_img.get('StudyDescription'):
             dicom_series[series_uid]['study_description'] = dicom_img.StudyDescription
         else:
-            dicom_series[series_uid]['study_description'] = "NONE"
+            dicom_series[series_uid]['study_description'] = ''
         if dicom_img.get('SliceThickness'):
             dicom_series[series_uid]['slice_thickness'] = dicom_img.SliceThickness
             dicom_folder_name = os.path.basename(os.path.dirname(dicom_path))
@@ -57,7 +57,7 @@ def extract_dicom_header_data(
                 dicom_series_of_interest[dicom_folder_name] = [
                     dicom_img.SliceThickness, series_uid, [dicom_path]]
         else:
-            dicom_series[series_uid]['slice_thickness'] = "NONE"
+            dicom_series[series_uid]['slice_thickness'] = ''
         dicom_series[series_uid]['mrn'] = mrn
         dicom_series[series_uid]['study_date'] = ct_date
         dicom_series[series_uid]['number_of_slices'] = 0
@@ -80,24 +80,25 @@ def export_dicom_series_with_min_slice_thickness(output_path, dicom_series_of_in
             shutil.copyfile(dicom_slice_path, output_slice_path)
 
 
-with open(src_dicom_path + '/dicom_stats.csv', 'w') as output_csv:
-    for root, dirs, files in os.walk(src_dicom_path):
-        for file in files:
-            if is_dicom(file):
-                dicom_path = os.path.join(root, file)
-                dicom_folder_name = os.path.basename(
-                    os.path.dirname(dicom_path))
+if __name__ == '__main__':
+    with open(src_dicom_path + '/dicom_stats.csv', 'w') as output_csv:
+        for root, dirs, files in os.walk(src_dicom_path):
+            for file in files:
+                if is_dicom(file):
+                    dicom_path = os.path.join(root, file)
+                    dicom_folder_name = os.path.basename(
+                        os.path.dirname(dicom_path))
 
-                mrn = dicom_folder_name.split('_')[0]
-                ct_date = dicom_folder_name.split('_')[1]
-                extract_dicom_header_data(dicom_path, mrn, ct_date)
+                    mrn = dicom_folder_name.split('_')[0]
+                    ct_date = dicom_folder_name.split('_')[1]
+                    extract_dicom_header_data(dicom_path, mrn, ct_date)
 
-    csv_columns = ['patient_name', 'patient_id', 'mrn',
-                   'study_date', 'number_of_slices', 'slice_thickness', 'study_description']
-    writer = csv.DictWriter(output_csv, fieldnames=csv_columns)
-    writer.writeheader()
-    for series in dicom_series:
-        writer.writerow(dicom_series[series])
+        csv_columns = ['patient_name', 'patient_id', 'mrn',
+                       'study_date', 'number_of_slices', 'slice_thickness', 'study_description']
+        writer = csv.DictWriter(output_csv, fieldnames=csv_columns)
+        writer.writeheader()
+        for series in dicom_series:
+            writer.writerow(dicom_series[series])
 
-export_dicom_series_with_min_slice_thickness(
-    src_dicom_path, dicom_series_of_interest)
+    # export_dicom_series_with_min_slice_thickness(
+    #     src_dicom_path, dicom_series_of_interest)
