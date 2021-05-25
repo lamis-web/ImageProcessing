@@ -60,7 +60,7 @@ def extract_dicom_header_data(
             dicom_series[series_uid]['slice_thickness'] = ''
         dicom_series[series_uid]['mrn'] = mrn
         dicom_series[series_uid]['study_date'] = ct_date
-        dicom_series[series_uid]['number_of_slices'] = 0
+        dicom_series[series_uid]['number_of_slices'] = 1
     else:
         dicom_series[series_uid]['number_of_slices'] += 1
 
@@ -81,7 +81,7 @@ def export_dicom_series_with_min_slice_thickness(output_path, dicom_series_of_in
 
 
 if __name__ == '__main__':
-    with open(src_dicom_path + '/dicom_stats.csv', 'w') as output_csv:
+    with open(src_dicom_path + '/dicom_stats.csv', 'w', newline='') as output_csv:
         for root, dirs, files in os.walk(src_dicom_path):
             for file in files:
                 if is_dicom(file):
