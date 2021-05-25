@@ -25,7 +25,7 @@ subj_ID = str(sys.argv[3])
 img_ID = str(sys.argv[4])
 
 # Create a logger
-logging.basicConfig(filename='dicom_identifier.log', level=logging.WARNING,
+logging.basicConfig(filename='dicom_deidentifier.log', level=logging.WARNING,
                     filemode='w', format='%(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
@@ -64,15 +64,17 @@ for dicom_path in dicom_paths:
             int(dicom_instance.PatientBirthDate) + (randint(1, 500) * 10000))
         logger.info(f'{dicom_path} - PatientBirthDate Header Processed')
     else:
-        logger.error(f'{dicom_path} - PatientBirthDate Header does not exist')
-        continue
+        logger.warning(
+            f'{dicom_path} - PatientBirthDate Header does not exist')
 
     if dicom_instance.get('AccessionNumber'):
         dicom_instance.AccessionNumber = subj_ID + "_" + img_ID
         logger.info(f'{dicom_path} - AccessionNumber Header Processed')
     else:
-        logger.error(f'{dicom_path} - AccessionNumber Header does not exist')
-        continue
+        logger.warning(
+            f'{dicom_path} - AccessionNumber Header does not exist: Appending Header')
+        dicom_instance.add_new([0x0008, 0x0050], dictionary_VR(
+            [0x0008, 0x0050]), subj_ID + "_" + img_ID)
 
     if dicom_instance.get('StudyDate'):
         dicom_instance.StudyDate = str(
@@ -85,7 +87,7 @@ for dicom_path in dicom_paths:
     if dicom_instance.get('SeriesDate'):
         dicom_instance.SeriesDate = dicom_instance.StudyDate
     else:
-        logger.warn(
+        logger.warning(
             f'{dicom_path} - SeriesDate Header does not exist: Appending Header')
         dicom_instance.add_new([0x0008, 0x0021], dictionary_VR(
             [0x0008, 0x0021]), dicom_instance.StudyDate)
@@ -93,7 +95,7 @@ for dicom_path in dicom_paths:
     if dicom_instance.get('AcquisitionDate'):
         dicom_instance.AcquisitionDate = dicom_instance.StudyDate
     else:
-        logger.warn(
+        logger.warning(
             f'{dicom_path} - AcquisitionDate Header does not exist: Appending Header')
         dicom_instance.add_new([0x0008, 0x0022], dictionary_VR(
             [0x0008, 0x0022]), dicom_instance.StudyDate)
@@ -101,7 +103,7 @@ for dicom_path in dicom_paths:
     if dicom_instance.get('ContentDate'):
         dicom_instance.ContentDate = dicom_instance.ContentDate
     else:
-        logger.warn(
+        logger.warning(
             f'{dicom_path} - ContentDate Header does not exist: Appending Header')
         dicom_instance.add_new([0x0008, 0x0023], dictionary_VR(
             [0x0008, 0x0023]), dicom_instance.StudyDate)
