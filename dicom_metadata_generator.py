@@ -93,7 +93,7 @@ for dicom_slice_path in tqdm(walkdir(src_dicom_path), total=file_count):
 
 # write to csv
 print('>>> Writing all metadata to dicom_metadata_all.csv', end=' ')
-with open(src_dicom_path + '/dicom_metadata_all.csv', 'w', newline='') as output_csv:
+with open(dst_dicom_path + '/dicom_metadata_all.csv', 'w', newline='') as output_csv:
     csv_columns = ['mrn', 'study_date', 'patient_name', 'patient_id',
                    'slice_thickness', 'number_of_slices', 'study_description', 'series_description']
     writer = csv.DictWriter(output_csv, fieldnames=csv_columns)
@@ -126,7 +126,7 @@ print('----- Done')
 
 # write to csv
 print('>>> Writing selected metadata to dicom_metadata_selected.csv', end=' ')
-with open(src_dicom_path + '/dicom_metadata_selected.csv', 'w', newline='') as output_csv:
+with open(dst_dicom_path + '/dicom_metadata_selected.csv', 'w', newline='') as output_csv:
     csv_columns = ['mrn', 'study_date', 'patient_name', 'patient_id',
                    'slice_thickness', 'number_of_slices', 'study_description', 'series_description']
     writer = csv.DictWriter(output_csv, fieldnames=csv_columns)
