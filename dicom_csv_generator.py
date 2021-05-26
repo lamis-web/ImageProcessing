@@ -1,6 +1,7 @@
 from pydicom import dcmread
 from pydicom.datadict import dictionary_VR
 from random import randint
+from tqdm import tqdm
 import argparse
 import os
 import sys
@@ -53,19 +54,28 @@ def extract_dicom_header(
     else:
         dicom_series[series_uid]['number_of_slices'] += 1
 
-with open(src_dicom_path + '/dicom_stats.csv', 'w', newline='') as output_csv:
-    for root, dirs, files in os.walk(src_dicom_path):
+# precounting files
+file_count = 0
+for root, dirs, files in os.walk(src_dicom_path):
+    for file in files:
+        file_count += 1
+
+def walkdir(src):
+    for base, dirs, files in os.walk(src):
         for file in files:
-            if not file.endswith('.dcm'):
-                continue
-            dicom_path = os.path.join(root, file)
-            dicom_folder_name = os.path.basename(
-                os.path.dirname(dicom_path))
+            yield os.path.join(base, file)
 
-            mrn = dicom_folder_name.split('_')[0]
-            ct_date = dicom_folder_name.split('_')[1]
-            extract_dicom_header(dicom_path, mrn, ct_date)
+# recursively read dicom images
+for dicom_slice_path in tqdm(walkdir(src_dicom_path), total=file_count):
+    if not dicom_slice_path.endswith('.dcm'):
+        continue
+    series_name = os.path.basename(os.path.dirname(dicom_slice_path))
+    mrn = series_name.split('_')[0]
+    ct_date = series_name.split('_')[1]
+    extract_dicom_header(dicom_slice_path, mrn, ct_date)
 
+# write to csv
+with open(src_dicom_path + '/dicom_stats.csv', 'w', newline='') as output_csv:
     csv_columns = ['mrn', 'study_date', 'patient_name', 'patient_id',
                     'slice_thickness', 'number_of_slices', 'study_description', 'series_description']
     writer = csv.DictWriter(output_csv, fieldnames=csv_columns)
