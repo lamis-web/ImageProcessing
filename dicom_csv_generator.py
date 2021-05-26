@@ -143,9 +143,13 @@ for series_uid in dicom_series_selected:
     if not os.path.exists(dicom_destination_folder_path):
         os.makedirs(dicom_destination_folder_path)
 
+    dicom_destination_series_path = dicom_destination_folder_path + '/' + series_uid
+    if not os.path.exists(dicom_destination_series_path):
+        os.makedirs(dicom_destination_series_path)
+
     for dicom_source_slice_path in dicom_source_paths:
         dicom_source_slice_filename = os.path.basename(dicom_source_slice_path)
-        dicom_destination_slice_path = dicom_destination_folder_path + \
+        dicom_destination_slice_path = dicom_destination_series_path + \
             '/' + dicom_source_slice_filename
         shutil.copyfile(dicom_source_slice_path, dicom_destination_slice_path)
 print('Done')
