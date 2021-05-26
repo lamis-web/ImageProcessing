@@ -2,6 +2,8 @@
 .envrc
 sample_dicom/
 sample_output/
+sample_dicom_input/
+sample_dicom_output/
 
 read_slice.py
 practice.py
