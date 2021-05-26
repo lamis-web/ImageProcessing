@@ -25,7 +25,8 @@ src_dicom_path = args.src
 dst_dicom_path = args.dst
 
 dicom_series = {}  # { SeriesInstanceUID : { Series Data } }
-dicom_series_paths = {} # { SeriesInstanceUID : { Img Paths } }
+dicom_series_paths = {}  # { SeriesInstanceUID : { Img Paths } }
+
 
 def extract_dicom_header(
         dicom_path, mrn, ct_date):
@@ -81,6 +82,7 @@ def walkdir(src):
 
 
 # recursively read dicom images
+print('>>> Generating metadata dictionary')
 for dicom_slice_path in tqdm(walkdir(src_dicom_path), total=file_count):
     if not dicom_slice_path.endswith('.dcm'):
         continue
@@ -90,7 +92,7 @@ for dicom_slice_path in tqdm(walkdir(src_dicom_path), total=file_count):
     extract_dicom_header(dicom_slice_path, mrn, ct_date)
 
 # write to csv
-print('-----Writing all metadata to dicom_metadata_all.csv')
+print('>>> Writing all metadata to dicom_metadata_all.csv', end=' ')
 with open(src_dicom_path + '/dicom_metadata_all.csv', 'w', newline='') as output_csv:
     csv_columns = ['mrn', 'study_date', 'patient_name', 'patient_id',
                    'slice_thickness', 'number_of_slices', 'study_description', 'series_description']
@@ -98,13 +100,13 @@ with open(src_dicom_path + '/dicom_metadata_all.csv', 'w', newline='') as output
     writer.writeheader()
     for series_uid in dicom_series:
         writer.writerow(dicom_series[series_uid])
-print('Done')
+print('----- Done')
 
 # pick series of interest
 dicom_series_selected = copy.deepcopy(dicom_series)
 abandoned_keywords = ['SCOUT', 'COR', 'SAG', 'MIP']
 
-print('-----Selecting series of interest')
+print('>>> Selecting series of interest', end=' ')
 for series_uid in dicom_series:
     series_meta = dicom_series[series_uid]
     if series_meta['slice_thickness'] == '' or int(series_meta['slice_thickness']) > 5:
@@ -120,10 +122,10 @@ for series_uid in dicom_series:
             dicom_series_selected.pop(series_uid)
             dicom_series_paths.pop(series_uid)
             continue
-print('Done')
+print('----- Done')
 
 # write to csv
-print('-----Writing selected metadata to dicom_metadata_selected.csv')
+print('>>> Writing selected metadata to dicom_metadata_selected.csv', end=' ')
 with open(src_dicom_path + '/dicom_metadata_selected.csv', 'w', newline='') as output_csv:
     csv_columns = ['mrn', 'study_date', 'patient_name', 'patient_id',
                    'slice_thickness', 'number_of_slices', 'study_description', 'series_description']
@@ -131,11 +133,11 @@ with open(src_dicom_path + '/dicom_metadata_selected.csv', 'w', newline='') as o
     writer.writeheader()
     for series_uid in dicom_series_selected:
         writer.writerow(dicom_series_selected[series_uid])
-print('Done')
+print('----- Done')
 
 # Copy selected DICOM series to destination
-print('-----Coping selected series to the destination')
-for series_uid in dicom_series_selected:
+print('>>> Coping selected series to the destination')
+for series_uid in tqdm(dicom_series_selected):
     series_meta = dicom_series_selected[series_uid]
 
     dicom_source_paths = dicom_series_paths[series_uid]
@@ -146,7 +148,8 @@ for series_uid in dicom_series_selected:
     if not os.path.exists(dicom_destination_folder_path):
         os.makedirs(dicom_destination_folder_path)
 
-    dicom_destination_series_path = dicom_destination_folder_path + '/' + series_meta['series_description']
+    dicom_destination_series_path = dicom_destination_folder_path + \
+        '/' + series_meta['series_description']
     if not os.path.exists(dicom_destination_series_path):
         os.makedirs(dicom_destination_series_path)
 
@@ -155,4 +158,3 @@ for series_uid in dicom_series_selected:
         dicom_destination_slice_path = dicom_destination_series_path + \
             '/' + dicom_source_slice_filename
         shutil.copyfile(dicom_source_slice_path, dicom_destination_slice_path)
-print('Done')
