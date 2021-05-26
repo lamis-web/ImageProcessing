@@ -25,7 +25,7 @@ src_dicom_path = args.src
 dst_dicom_path = args.dst
 
 dicom_series = {}  # { SeriesInstanceUID : { Series Data } }
-
+dicom_series_paths = {} # { SeriesInstanceUID : { Img Paths } }
 
 def extract_dicom_header(
         dicom_path, mrn, ct_date):
@@ -61,10 +61,10 @@ def extract_dicom_header(
         dicom_series[series_uid]['mrn'] = mrn
         dicom_series[series_uid]['study_date'] = ct_date
         dicom_series[series_uid]['number_of_slices'] = 1
-        dicom_series[series_uid]['img_paths'] = [dicom_path]
+        dicom_series_paths[series_uid] = [dicom_path]
     else:
         dicom_series[series_uid]['number_of_slices'] += 1
-        dicom_series[series_uid]['img_paths'].append(dicom_path)
+        dicom_series_paths[series_uid].append(dicom_path)
 
 
 # precounting files
@@ -107,15 +107,18 @@ abandoned_keywords = ['SCOUT', 'COR', 'SAG', 'MIP']
 print('-----Selecting series of interest')
 for series_uid in dicom_series:
     series_meta = dicom_series[series_uid]
-    if series_meta.slice_thickness == '' or int(series_meta.slice_thickness) > 5:
+    if series_meta['slice_thickness'] == '' or int(series_meta['slice_thickness']) > 5:
         dicom_series_selected.pop(series_uid)
+        dicom_series_paths.pop(series_uid)
         continue
-    if int(series_meta.number_of_slices) < 10:
+    if int(series_meta['number_of_slices']) < 10:
         dicom_series_selected.pop(series_uid)
+        dicom_series_paths.pop(series_uid)
         continue
     for keyword in abandoned_keywords:
-        if keyword in series_meta.series_description:
+        if keyword in series_meta['series_description'].upper():
             dicom_series_selected.pop(series_uid)
+            dicom_series_paths.pop(series_uid)
             continue
 print('Done')
 
@@ -135,15 +138,15 @@ print('-----Coping selected series to the destination')
 for series_uid in dicom_series_selected:
     series_meta = dicom_series_selected[series_uid]
 
-    dicom_source_paths = series_meta.img_paths
+    dicom_source_paths = dicom_series_paths[series_uid]
     dicom_source_folder_name = os.path.basename(
-        os.path.dirname(dicom_source_paths))
+        os.path.dirname(dicom_source_paths[0]))
 
     dicom_destination_folder_path = dst_dicom_path + '/' + dicom_source_folder_name
     if not os.path.exists(dicom_destination_folder_path):
         os.makedirs(dicom_destination_folder_path)
 
-    dicom_destination_series_path = dicom_destination_folder_path + '/' + series_uid
+    dicom_destination_series_path = dicom_destination_folder_path + '/' + series_meta['series_description']
     if not os.path.exists(dicom_destination_series_path):
         os.makedirs(dicom_destination_series_path)
 
