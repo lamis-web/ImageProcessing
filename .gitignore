@@ -1,8 +1,12 @@
 .direnv/
 .envrc
 sample_dicom/
+sample_output/
 
 read_slice.py
 practice.py
 analyze_to_dicom.py
 analyze_and_nii_to_dicom.py
+test.py
+
+dicom_deidentifier.log

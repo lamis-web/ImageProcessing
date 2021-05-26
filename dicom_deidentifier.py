@@ -26,7 +26,7 @@ img_ID = str(sys.argv[4])
 
 # Create a logger
 logging.basicConfig(filename='dicom_deidentifier.log', level=logging.WARNING,
-                    filemode='w', format='%(levelname)s - %(message)s')
+                    filemode='a', format='%(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 # Prepare a output folder
