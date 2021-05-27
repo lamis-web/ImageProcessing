@@ -4,11 +4,13 @@ sample_dicom/
 sample_output/
 sample_dicom_input/
 sample_dicom_output/
+sample_excel.xlsx
 
 read_slice.py
 practice.py
 analyze_to_dicom.py
 analyze_and_nii_to_dicom.py
 test.py
+dicom_deidentifier_temp.py
 
 dicom_deidentifier.log
