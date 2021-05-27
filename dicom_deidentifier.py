@@ -8,6 +8,7 @@ import argparse
 import os
 import csv
 import copy
+import datetime
 import logging
 
 PROJECT = 'C19'
@@ -276,9 +277,9 @@ def deidentify_and_save(dicom_input_path, dicom_output_path, subj_id, img_id):
         del dicom_slice[0x0010, 0x21b0]
     if dicom_slice.get('PatientComments'):
         del dicom_slice[0x0010, 0x4000]
-    if dicom_slice.net('PersonName'):
+    if dicom_slice.get('PersonName'):
         del dicom_slice[0x0040, 0xA123]
-    if dicom_slice.net('ScheduledPatientInstitutionResidence'):
+    if dicom_slice.get('ScheduledPatientInstitutionResidence'):
         del dicom_slice[0x0038, 0x001E]
     # Save modified DICOM
     try:
@@ -298,13 +299,14 @@ def parse_series_description(series_description: str) -> str:
     return series_description
 
 
-print('>>> Construct subjID & imgID from excel metadata sheet', end='')
-excel_data = pd.read_excel('./sample_excel.xlsx', header=8, usecols='A:B,H')
 # Construct {'Series_UID' : ['Subj_ID', 'Img_ID']} from Excel metadata sheet
+print('>>> Construct subjID & imgID from excel metadata sheet', end='')
+excel_data = pd.read_excel('./sample_excel.xlsx', header=8, usecols='A:B,H,I')
 series_id_dict = {}
 for _, row in excel_data.iterrows():
     mrn = str(row['mrn']).zfill(7)
-    ctdate = str(row['ctdate'])
+    ctdate = row['date'].strftime('%Y%m%d') if type(
+        row['date']) == datetime.datetime else ''
     subj_id = PROJECT + HOSPITAL + str(CASE_START_INDEX + row['SubjNum'])
     img_id = str(row['Time'])
     key = mrn + '_' + ctdate + '_all'
@@ -345,4 +347,4 @@ for series_uid in tqdm(dicom_series_selected):
         dicom_destination_slice_path = dicom_destination_folder_path + \
             '/' + dicom_source_slice_filename
         deidentify_and_save(dicom_source_slice_path,
-                            dicom_destination_slice_path)
+                            dicom_destination_slice_path, subj_id, img_id)

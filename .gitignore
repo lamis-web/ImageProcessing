@@ -14,3 +14,4 @@ test.py
 dicom_deidentifier_temp.py
 
 dicom_deidentifier.log
+dicom_header_output.txt
