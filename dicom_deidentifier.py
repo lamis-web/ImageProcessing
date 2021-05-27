@@ -23,7 +23,7 @@ parser.add_argument('src', metavar='src', type=str,
 parser.add_argument('dst', metavar='dst', type=str,
                     help='DICOM destination folder path')
 parser.add_argument('xls', metavar='xls', type=str,
-                    help='Excel metada sheet path')
+                    help='Excel metadata sheet path')
 args = parser.parse_args()
 
 # Create a logger
