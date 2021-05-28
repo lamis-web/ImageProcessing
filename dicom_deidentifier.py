@@ -114,25 +114,24 @@ with open(dst_dicom_path + '/dicom_metadata_all.csv', 'w', newline='') as output
 print('----- Done')
 
 # pick series of interest
-dicom_series_selected = copy.deepcopy(dicom_series)
 abandoned_keywords = ['SCOUT', 'COR', 'SAG', 'MIP']
-
 print('>>> Selecting series of interest', end=' ')
+series_uid_to_delete = []
 for series_uid in dicom_series:
     series_meta = dicom_series[series_uid]
     if series_meta['slice_thickness'] == '' or int(series_meta['slice_thickness']) > 5:
-        dicom_series_selected.pop(series_uid)
-        dicom_series_paths.pop(series_uid)
+        series_uid_to_delete.append(series_uid)
         continue
     if int(series_meta['number_of_slices']) < 10:
-        dicom_series_selected.pop(series_uid)
-        dicom_series_paths.pop(series_uid)
+        series_uid_to_delete.append(series_uid)
         continue
     for keyword in abandoned_keywords:
         if keyword in series_meta['series_description'].upper():
-            dicom_series_selected.pop(series_uid)
-            dicom_series_paths.pop(series_uid)
+            series_uid_to_delete.append(series_uid)
             continue
+for series_uid in series_uid_to_delete:
+    del dicom_series[series_uid]
+    del dicom_series_paths[series_uid]
 print('----- Done')
 
 # write to csv
@@ -142,8 +141,8 @@ with open(dst_dicom_path + '/dicom_metadata_selected.csv', 'w', newline='') as o
                    'slice_thickness', 'number_of_slices', 'study_description', 'series_description']
     writer = csv.DictWriter(output_csv, fieldnames=csv_columns)
     writer.writeheader()
-    for series_uid in dicom_series_selected:
-        writer.writerow(dicom_series_selected[series_uid])
+    for series_uid in dicom_series:
+        writer.writerow(dicom_series[series_uid])
 print('----- Done')
 
 
@@ -315,8 +314,8 @@ print('----- Done')
 
 # Copy selected DICOM series to destination
 print('>>> De-identify and copy selected series to the destination')
-for series_uid in tqdm(dicom_series_selected):
-    series_meta = dicom_series_selected[series_uid]
+for series_uid in tqdm(dicom_series):
+    series_meta = dicom_series[series_uid]
 
     dicom_source_paths = dicom_series_paths[series_uid]
     dicom_source_folder_name = os.path.basename(
