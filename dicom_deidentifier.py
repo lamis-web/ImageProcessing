@@ -116,22 +116,21 @@ print('----- Done')
 # pick series of interest
 abandoned_keywords = ['SCOUT', 'COR', 'SAG', 'MIP']
 print('>>> Selecting series of interest', end=' ')
-series_uid_to_delete = []
-for series_uid in dicom_series:
+for series_uid in list(dicom_series):
     series_meta = dicom_series[series_uid]
     if series_meta['slice_thickness'] == '' or int(series_meta['slice_thickness']) > 5:
-        series_uid_to_delete.append(series_uid)
+        del dicom_series[series_uid]
+        del dicom_series_paths[series_uid]
         continue
     if int(series_meta['number_of_slices']) < 10:
-        series_uid_to_delete.append(series_uid)
+        del dicom_series[series_uid]
+        del dicom_series_paths[series_uid]
         continue
     for keyword in abandoned_keywords:
         if keyword in series_meta['series_description'].upper():
-            series_uid_to_delete.append(series_uid)
+            del dicom_series[series_uid]
+            del dicom_series_paths[series_uid]
             continue
-for series_uid in series_uid_to_delete:
-    del dicom_series[series_uid]
-    del dicom_series_paths[series_uid]
 print('----- Done')
 
 # write to csv
