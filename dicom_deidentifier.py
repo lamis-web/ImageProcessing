@@ -262,9 +262,9 @@ def deidentify_and_save(dicom_input_path, dicom_output_path, subj_id, img_id):
     if dicom_slice.get('RequestingPhysician'):
         del dicom_slice[0x0032, 0x1032]
     if dicom_slice.get('PerformingPhysicianName'):
-        del dicom_slice[0x0032, 0x1032]
+        del dicom_slice[0x0008, 0x1050]
     if dicom_slice.get('NameOfPhysiciansReadingStudy'):
-        del dicom_slice[0x0032, 0x1032]
+        del dicom_slice[0x0008, 0x1060]
     if dicom_slice.get('OtherPatientIDs'):
         del dicom_slice[0x0010, 0x1000]
     if dicom_slice.get('MilitaryRank'):
