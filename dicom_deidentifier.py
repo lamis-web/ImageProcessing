@@ -130,7 +130,7 @@ for series_uid in list(dicom_series):
         if keyword in series_meta['series_description'].upper():
             del dicom_series[series_uid]
             del dicom_series_paths[series_uid]
-            continue
+            break 
 print('----- Done')
 
 # write to csv
@@ -299,7 +299,7 @@ def parse_series_description(series_description: str) -> str:
 
 # Construct {'Series_UID' : ['Subj_ID', 'Img_ID']} from Excel metadata sheet
 print('>>> Construct subjID & imgID from excel metadata sheet', end='')
-excel_data = pd.read_excel('./sample_excel.xlsx', header=8, usecols='A:B,H,I')
+excel_data = pd.read_excel(excel_path, header=8, usecols='A:B,H,I')
 series_id_dict = {}
 for _, row in excel_data.iterrows():
     mrn = str(row['mrn']).zfill(7)
