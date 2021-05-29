@@ -113,7 +113,7 @@ with open(dst_dicom_path + '/dicom_metadata_all.csv', 'w', newline='') as output
 print('----- Done')
 
 # pick series of interest
-abandoned_keywords = ['SCOUT', 'COR', 'SAG', 'MIP']
+abandoned_keywords = ['SCOUT', 'COR', 'SAG', 'MIP', 'AX']
 print('>>> Selecting series of interest', end=' ')
 for series_uid in list(dicom_series):
     series_meta = dicom_series[series_uid]
