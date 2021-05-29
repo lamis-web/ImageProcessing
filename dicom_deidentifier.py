@@ -7,7 +7,7 @@ import pandas as pd
 import argparse
 import os
 import csv
-import copy
+import re
 import datetime
 import logging
 
@@ -291,9 +291,8 @@ def deidentify_and_save(dicom_input_path, dicom_output_path, subj_id, img_id):
 def parse_series_description(series_description: str) -> str:
     series_description = series_description.lstrip()
     series_description = series_description.rstrip()
-    series_description = series_description.replace('/', '_')
-    series_description = series_description.replace(' ', '_')
-    series_description = series_description.replace('.', 'p')
+    series_description = series_description.replace('.', 'P')
+    series_description = re.sub('\W+', '_', series_description)
     return series_description
 
 
@@ -335,14 +334,14 @@ for series_uid in tqdm(dicom_series):
     dicom_destination_folder_name = subj_id + \
         '_' + img_id + '_' + series_description
 
-    dicom_destination_folder_path = dst_dicom_path + \
-        '/' + dicom_destination_folder_name
+    dicom_destination_folder_path = os.path.join(
+        dst_dicom_path, dicom_destination_folder_name)
     if not os.path.exists(dicom_destination_folder_path):
         os.makedirs(dicom_destination_folder_path)
 
     for dicom_source_slice_path in dicom_source_paths:
         dicom_source_slice_filename = os.path.basename(dicom_source_slice_path)
-        dicom_destination_slice_path = dicom_destination_folder_path + \
-            '/' + dicom_source_slice_filename
+        dicom_destination_slice_path = os.path.join(
+            dicom_destination_folder_path, dicom_source_slice_filename)
         deidentify_and_save(dicom_source_slice_path,
                             dicom_destination_slice_path, subj_id, img_id)
