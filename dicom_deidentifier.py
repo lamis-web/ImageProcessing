@@ -1,4 +1,3 @@
-from typing import Dict
 from pydicom import dcmread
 from pydicom.datadict import dictionary_VR
 from random import randint
@@ -130,7 +129,7 @@ for series_uid in list(dicom_series):
         if keyword in series_meta['series_description'].upper():
             del dicom_series[series_uid]
             del dicom_series_paths[series_uid]
-            continue
+            break
 print('----- Done')
 
 # write to csv
@@ -262,9 +261,9 @@ def deidentify_and_save(dicom_input_path, dicom_output_path, subj_id, img_id):
     if dicom_slice.get('RequestingPhysician'):
         del dicom_slice[0x0032, 0x1032]
     if dicom_slice.get('PerformingPhysicianName'):
-        del dicom_slice[0x0032, 0x1032]
+        del dicom_slice[0x0008, 0x1050]
     if dicom_slice.get('NameOfPhysiciansReadingStudy'):
-        del dicom_slice[0x0032, 0x1032]
+        del dicom_slice[0x0008, 0x1060]
     if dicom_slice.get('OtherPatientIDs'):
         del dicom_slice[0x0010, 0x1000]
     if dicom_slice.get('MilitaryRank'):
@@ -298,7 +297,7 @@ def parse_series_description(series_description: str) -> str:
 
 # Construct {'Series_UID' : ['Subj_ID', 'Img_ID']} from Excel metadata sheet
 print('>>> Construct subjID & imgID from excel metadata sheet', end='')
-excel_data = pd.read_excel('./sample_excel.xlsx', header=8, usecols='A:B,H,I')
+excel_data = pd.read_excel(excel_path, header=8, usecols='A:B,H,I')
 series_id_dict = {}
 for _, row in excel_data.iterrows():
     mrn = str(row['mrn']).zfill(7)
