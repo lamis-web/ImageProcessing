@@ -1,4 +1,3 @@
-from typing import Dict
 from pydicom import dcmread
 from pydicom.datadict import dictionary_VR
 from random import randint
@@ -7,7 +6,6 @@ import pandas as pd
 import argparse
 import os
 import csv
-import copy
 import datetime
 import logging
 
