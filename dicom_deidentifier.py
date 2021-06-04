@@ -234,8 +234,6 @@ def deidentify_and_save(dicom_input_path, dicom_output_path, subj_id, img_id):
         del dicom_slice[0x0010, 0x1002]
     if dicom_slice.get('PatientBirthName'):
         del dicom_slice[0x0010, 0x1005]
-    if dicom_slice.get('PatientAge'):
-        del dicom_slice[0x0010, 0x1010]
     if dicom_slice.get('PatientSize'):
         del dicom_slice[0x0010, 0x1020]
     if dicom_slice.get('PatientWeight'):
