@@ -6,6 +6,7 @@ import pandas as pd
 import argparse
 import os
 import csv
+import re
 import datetime
 import logging
 
@@ -112,7 +113,7 @@ with open(dst_dicom_path + '/dicom_metadata_all.csv', 'w', newline='') as output
 print('----- Done')
 
 # pick series of interest
-abandoned_keywords = ['SCOUT', 'COR', 'SAG', 'MIP']
+abandoned_keywords = ['SCOUT', 'COR', 'SAG', 'MIP', 'AX']
 print('>>> Selecting series of interest', end=' ')
 for series_uid in list(dicom_series):
     series_meta = dicom_series[series_uid]
@@ -128,7 +129,7 @@ for series_uid in list(dicom_series):
         if keyword in series_meta['series_description'].upper():
             del dicom_series[series_uid]
             del dicom_series_paths[series_uid]
-            break 
+            break
 print('----- Done')
 
 # write to csv
@@ -233,8 +234,6 @@ def deidentify_and_save(dicom_input_path, dicom_output_path, subj_id, img_id):
         del dicom_slice[0x0010, 0x1002]
     if dicom_slice.get('PatientBirthName'):
         del dicom_slice[0x0010, 0x1005]
-    if dicom_slice.get('PatientAge'):
-        del dicom_slice[0x0010, 0x1010]
     if dicom_slice.get('PatientSize'):
         del dicom_slice[0x0010, 0x1020]
     if dicom_slice.get('PatientWeight'):
@@ -289,9 +288,8 @@ def deidentify_and_save(dicom_input_path, dicom_output_path, subj_id, img_id):
 def parse_series_description(series_description: str) -> str:
     series_description = series_description.lstrip()
     series_description = series_description.rstrip()
-    series_description = series_description.replace('/', '_')
-    series_description = series_description.replace(' ', '_')
-    series_description = series_description.replace('.', 'p')
+    series_description = series_description.replace('.', 'P')
+    series_description = re.sub('\W+', '_', series_description)
     return series_description
 
 
@@ -333,14 +331,14 @@ for series_uid in tqdm(dicom_series):
     dicom_destination_folder_name = subj_id + \
         '_' + img_id + '_' + series_description
 
-    dicom_destination_folder_path = dst_dicom_path + \
-        '/' + dicom_destination_folder_name
+    dicom_destination_folder_path = os.path.join(
+        dst_dicom_path, dicom_destination_folder_name)
     if not os.path.exists(dicom_destination_folder_path):
         os.makedirs(dicom_destination_folder_path)
 
     for dicom_source_slice_path in dicom_source_paths:
         dicom_source_slice_filename = os.path.basename(dicom_source_slice_path)
-        dicom_destination_slice_path = dicom_destination_folder_path + \
-            '/' + dicom_source_slice_filename
+        dicom_destination_slice_path = os.path.join(
+            dicom_destination_folder_path, dicom_source_slice_filename)
         deidentify_and_save(dicom_source_slice_path,
                             dicom_destination_slice_path, subj_id, img_id)
