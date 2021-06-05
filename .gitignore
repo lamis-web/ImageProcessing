@@ -5,6 +5,7 @@ sample_output/
 sample_dicom_input/
 sample_dicom_output/
 sample_excel.xlsx
+data_sheet.xlsx
 
 read_slice.py
 practice.py
