@@ -17,5 +17,8 @@ dicom_deidentifier_temp.py
 dicom_deidentifier.log
 dicom_header_output.txt
 
-# COVID_CTs_20210513CarissaWalter_0515jc.xlsx
-# DataSheet.xlsx
+COVID_CTs_20210513CarissaWalter_0515jc.xlsx
+DataSheet.xlsx
+
+carisa_datasheet.xlsx
+choilab_datasheet.xlsx
