@@ -12,7 +12,7 @@ import logging
 
 PROJECT = 'C19'
 HOSPITAL = 'KU'
-CASE_START_INDEX = 10000
+CASE_START_INDEX = 1000
 
 # Create an argumnet parser
 parser = argparse.ArgumentParser(
@@ -163,50 +163,50 @@ def deidentify_and_save(dicom_input_path, dicom_output_path, subj_id, img_id):
     except:
         logger.error(f'{dicom_input_path} - PatientID Header does not exist')
         return
-    if dicom_slice.get('PatientBirthDate'):
-        dicom_slice.PatientBirthDate = str(
-            int(dicom_slice.PatientBirthDate) + (randint(1, 500) * 10000))
-        logger.info(f'{dicom_input_path} - PatientBirthDate Header Processed')
-    else:
-        logger.warning(
-            f'{dicom_input_path} - PatientBirthDate Header does not exist')
-    if dicom_slice.get('AccessionNumber'):
-        dicom_slice.AccessionNumber = subj_id + "_" + img_id
-        logger.info(f'{dicom_input_path} - AccessionNumber Header Processed')
-    else:
-        logger.warning(
-            f'{dicom_input_path} - AccessionNumber Header does not exist: Appending Header')
-        dicom_slice.add_new([0x0008, 0x0050], dictionary_VR(
-            [0x0008, 0x0050]), subj_id + "_" + img_id)
-    if dicom_slice.get('StudyDate'):
-        dicom_slice.StudyDate = str(
-            int(dicom_slice.StudyDate) + (randint(1, 30)))
-        logger.info(f'{dicom_input_path} - StudyDate Header Processed')
-    else:
-        logger.warn(f'{dicom_input_path} - StudyDate Header does not exist')
-        dicom_slice.add_new([0x0008, 0x0050], dictionary_VR(
-            [0x0008, 0x0020]), '19940912')
-    if dicom_slice.get('SeriesDate'):
-        dicom_slice.SeriesDate = dicom_slice.StudyDate
-    else:
-        logger.info(
-            f'{dicom_input_path} - SeriesDate Header does not exist: Appending Header')
-        dicom_slice.add_new([0x0008, 0x0021], dictionary_VR(
-            [0x0008, 0x0021]), dicom_slice.StudyDate)
-    if dicom_slice.get('AcquisitionDate'):
-        dicom_slice.AcquisitionDate = dicom_slice.StudyDate
-    else:
-        logger.info(
-            f'{dicom_input_path} - AcquisitionDate Header does not exist: Appending Header')
-        dicom_slice.add_new([0x0008, 0x0022], dictionary_VR(
-            [0x0008, 0x0022]), dicom_slice.StudyDate)
-    if dicom_slice.get('ContentDate'):
-        dicom_slice.ContentDate = dicom_slice.ContentDate
-    else:
-        logger.info(
-            f'{dicom_input_path} - ContentDate Header does not exist: Appending Header')
-        dicom_slice.add_new([0x0008, 0x0023], dictionary_VR(
-            [0x0008, 0x0023]), dicom_slice.StudyDate)
+    # if dicom_slice.get('PatientBirthDate'):
+    #     dicom_slice.PatientBirthDate = str(
+    #         int(dicom_slice.PatientBirthDate) + (randint(1, 500) * 10000))
+    #     logger.info(f'{dicom_input_path} - PatientBirthDate Header Processed')
+    # else:
+    #     logger.warning(
+    #         f'{dicom_input_path} - PatientBirthDate Header does not exist')
+    # if dicom_slice.get('AccessionNumber'):
+    #     dicom_slice.AccessionNumber = subj_id + "_" + img_id
+    #     logger.info(f'{dicom_input_path} - AccessionNumber Header Processed')
+    # else:
+    #     logger.warning(
+    #         f'{dicom_input_path} - AccessionNumber Header does not exist: Appending Header')
+    #     dicom_slice.add_new([0x0008, 0x0050], dictionary_VR(
+    #         [0x0008, 0x0050]), subj_id + "_" + img_id)
+    # if dicom_slice.get('StudyDate'):
+    #     dicom_slice.StudyDate = str(
+    #         int(dicom_slice.StudyDate) + (randint(1, 5)))  <FIX -> day % 28>
+    #     logger.info(f'{dicom_input_path} - StudyDate Header Processed')
+    # else:
+    #     logger.warn(f'{dicom_input_path} - StudyDate Header does not exist')
+    #     dicom_slice.add_new([0x0008, 0x0050], dictionary_VR(
+    #         [0x0008, 0x0020]), '19940912')
+    # if dicom_slice.get('SeriesDate'):
+    #     dicom_slice.SeriesDate = dicom_slice.StudyDate
+    # else:
+    #     logger.info(
+    #         f'{dicom_input_path} - SeriesDate Header does not exist: Appending Header')
+    #     dicom_slice.add_new([0x0008, 0x0021], dictionary_VR(
+    #         [0x0008, 0x0021]), dicom_slice.StudyDate)
+    # if dicom_slice.get('AcquisitionDate'):
+    #     dicom_slice.AcquisitionDate = dicom_slice.StudyDate
+    # else:
+    #     logger.info(
+    #         f'{dicom_input_path} - AcquisitionDate Header does not exist: Appending Header')
+    #     dicom_slice.add_new([0x0008, 0x0022], dictionary_VR(
+    #         [0x0008, 0x0022]), dicom_slice.StudyDate)
+    # if dicom_slice.get('ContentDate'):
+    #     dicom_slice.ContentDate = dicom_slice.ContentDate
+    # else:
+    #     logger.info(
+    #         f'{dicom_input_path} - ContentDate Header does not exist: Appending Header')
+    #     dicom_slice.add_new([0x0008, 0x0023], dictionary_VR(
+    #         [0x0008, 0x0023]), dicom_slice.StudyDate)
     # Sanitize DICOM headers
     if dicom_slice.get('InstitutionName'):
         del dicom_slice[0x0008, 0x0080]
