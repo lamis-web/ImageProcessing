@@ -6,7 +6,7 @@ from openpyxl import load_workbook
 PROJ = 'C19'
 HOSPITAL = 'KU'
 DISEASE = 'COVID-19'
-CASE_START_INDEX = 10000
+CASE_START_INDEX = 1000
 EXCEL_PATH = './choilab_datasheet copy.xlsx'
 MRN_CTDATE_PATH = './carisa_datasheet.xlsx'
 VIDA_PATH_PREFIX = 'E:\\jchoi4\\ImageData\\VIDA_20210608-09_C19_TK\\'

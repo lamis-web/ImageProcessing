@@ -7,12 +7,7 @@ import argparse
 import os
 import csv
 import re
-import datetime
 import logging
-
-PROJECT = 'C19'
-HOSPITAL = 'KU'
-CASE_START_INDEX = 1000
 
 # Create an argumnet parser
 parser = argparse.ArgumentParser(
@@ -50,14 +45,6 @@ def extract_dicom_header(
     if series_uid not in dicom_series:
         dicom_series[series_uid] = {}
         try:
-            dicom_series[series_uid]['patient_name'] = dicom_img.PatientName
-        except:
-            dicom_series[series_uid]['patient_name'] = ''
-        try:
-            dicom_series[series_uid]['patient_id'] = dicom_img.PatientID
-        except:
-            dicom_series[series_uid]['patinet_id'] = ''
-        try:
             dicom_series[series_uid]['study_description'] = dicom_img.StudyDescription
         except:
             dicom_series[series_uid]['study_description'] = ''
@@ -69,9 +56,10 @@ def extract_dicom_header(
             dicom_series[series_uid]['slice_thickness'] = dicom_img.SliceThickness
         else:
             dicom_series[series_uid]['slice_thickness'] = ''
+        dicom_series[series_uid]['number_of_slices'] = 1
         dicom_series[series_uid]['mrn'] = mrn
         dicom_series[series_uid]['study_date'] = ct_date
-        dicom_series[series_uid]['number_of_slices'] = 1
+        dicom_series[series_uid]['path'] = os.path.dirname(dicom_path)
         dicom_series_paths[series_uid] = [dicom_path]
     else:
         dicom_series[series_uid]['number_of_slices'] += 1
@@ -104,8 +92,8 @@ for dicom_slice_path in tqdm(walkdir(src_dicom_path), total=file_count):
 # write to csv
 print('>>> Writing all metadata to dicom_metadata_all.csv', end=' ')
 with open(dst_dicom_path + '/dicom_metadata_all.csv', 'w', newline='') as output_csv:
-    csv_columns = ['mrn', 'study_date', 'patient_name', 'patient_id',
-                   'slice_thickness', 'number_of_slices', 'study_description', 'series_description']
+    csv_columns = ['mrn', 'study_date', 'slice_thickness',
+                   'number_of_slices', 'study_description', 'series_description', 'path']
     writer = csv.DictWriter(output_csv, fieldnames=csv_columns)
     writer.writeheader()
     for series_uid in dicom_series:
@@ -113,7 +101,7 @@ with open(dst_dicom_path + '/dicom_metadata_all.csv', 'w', newline='') as output
 print('----- Done')
 
 # pick series of interest
-abandoned_keywords = ['SCOUT', 'COR', 'SAG', 'MIP', 'AX']
+abandoned_keywords = ['SCOUT', 'COR', 'SAG', 'MIP', 'AX', 'EXP']
 print('>>> Selecting series of interest', end=' ')
 for series_uid in list(dicom_series):
     series_meta = dicom_series[series_uid]
