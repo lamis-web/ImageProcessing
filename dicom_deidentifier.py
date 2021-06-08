@@ -295,15 +295,16 @@ def parse_series_description(series_description: str) -> str:
 
 # Construct {'Series_UID' : ['Subj_ID', 'Img_ID']} from Excel metadata sheet
 print('>>> Construct subjID & imgID from excel metadata sheet', end='')
-excel_data = pd.read_excel(excel_path, header=8, usecols='A:B,H,I')
+excel_data = pd.read_excel(excel_path, header=8, usecols='A,C,I:J')
 series_id_dict = {}
 for _, row in excel_data.iterrows():
+    subj_id = row(['Subj'])
     mrn = str(row['mrn']).zfill(7)
     ctdate = row['date'].strftime('%Y%m%d') if type(
         row['date']) == datetime.datetime else ''
-    subj_id = PROJECT + HOSPITAL + str(CASE_START_INDEX + row['SubjNum'])
-    img_id = str(row['Time'])
     key = mrn + '_' + ctdate + '_all'
+    img_id = str(row['Time'])
+
     series_id_dict[key] = [subj_id, img_id]
 print('----- Done')
 
