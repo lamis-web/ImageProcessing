@@ -117,7 +117,7 @@ abandoned_keywords = ['SCOUT', 'COR', 'SAG', 'MIP', 'AX']
 print('>>> Selecting series of interest', end=' ')
 for series_uid in list(dicom_series):
     series_meta = dicom_series[series_uid]
-    if series_meta['slice_thickness'] == '' or int(series_meta['slice_thickness']) > 5:
+    if series_meta['slice_thickness'] == '' or int(series_meta['slice_thickness']) >= 5:
         del dicom_series[series_uid]
         del dicom_series_paths[series_uid]
         continue
@@ -144,7 +144,7 @@ with open(dst_dicom_path + '/dicom_metadata_selected.csv', 'w', newline='') as o
 print('----- Done')
 
 
-def deidentify_and_save(dicom_input_path, dicom_output_path, subj_id, img_id):
+def deidentify_and_save(dicom_input_path, dicom_output_path, subj_id):
     try:
         dicom_slice = dcmread(dicom_input_path)
     except:
@@ -295,13 +295,15 @@ def parse_series_description(series_description: str) -> str:
 
 # Construct {'Series_UID' : ['Subj_ID', 'Img_ID']} from Excel metadata sheet
 print('>>> Construct subjID & imgID from excel metadata sheet', end='')
-excel_data = pd.read_excel(excel_path, header=8, usecols='A,C,I:J')
+excel_data = pd.read_excel(excel_path, header=8, usecols='A,C,I,J')
 series_id_dict = {}
 for _, row in excel_data.iterrows():
-    subj_id = row(['Subj'])
+    subj_id = row['Subj']
     mrn = str(row['mrn']).zfill(7)
     ctdate = row['date'].strftime('%Y%m%d') if type(
-        row['date']) == datetime.datetime else ''
+        row['date']) == pd.Timestamp else ''
+    if ctdate == '':
+        logger.warning(f'{subj_id} cannot get ctdate from {excel_path}')
     key = mrn + '_' + ctdate + '_all'
     img_id = str(row['Time'])
 
@@ -342,4 +344,4 @@ for series_uid in tqdm(dicom_series):
         dicom_destination_slice_path = os.path.join(
             dicom_destination_folder_path, dicom_source_slice_filename)
         deidentify_and_save(dicom_source_slice_path,
-                            dicom_destination_slice_path, subj_id, img_id)
+                            dicom_destination_slice_path, subj_id)
