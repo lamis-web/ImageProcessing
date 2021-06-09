@@ -1,24 +1,28 @@
 import sys
 import os
-import shutil
 import pandas as pd
 
 PROJ = 'C19'
+START_CASE_NUMBER = 93
 INPUT_PATH = sys.argv[1]
 EXCEL_PATH = sys.argv[2]
 
 # Create vida case data dictionary from Datasheet
-excel_data = pd.read_excel(EXCEL_PATH, usecols='A,AJ,I')
+excel_data = pd.read_excel(EXCEL_PATH, sheet_name=1, usecols='A,AJ,I')
 series_dict = {} # { vida_case_id: { proj, subj, img, path } }
 num_slices_dict = {} # { accession_number: { case_id, num_slices } }
 for _, row in excel_data.iterrows():
+    case_id = row[0]
+    if case_id < START_CASE_NUMBER:
+        continue
     case_id = str(row[0])
+
     num_slices = row[1]
     accession_number = row[2]
 
     subj = accession_number.split('_')[0]
     img = accession_number.split('_')[1]
-    path = os.path.abspath(INPUT_PATH) + '/' + case_id
+    path = 'PATH_IN_B2' + '/' + case_id
 
     series_dict[case_id] = {
         'Proj': PROJ,
@@ -42,21 +46,35 @@ for _, row in excel_data.iterrows():
         else:
             del series_dict[case_id]
 
+df = pd.DataFrame(series_dict).T
+indent = ' ' * 4
+# for dir in dirs:
+#     if dir in series_dict:
+#         print(dir)
+#         series_to_write.append(series_dict[dir])
+#         dest = series_dict[dir]['ImgDir']
+#         #os.rename(INPUT_PATH +  '/' + dir, dest)
+df = df.to_csv(index=False).replace(',', indent)
+with open('./ProjSubjList.in', 'w') as f:
+    f.write(df)
+
+
+
 # Find vida cases to process in input directory and change directory name
 # case_id(ex: 100) -> subj_img(ex: C19KU100_IN0)
-series_to_write = []
-indent = ' ' * 4
-dirs = [dir for dir in os.listdir(INPUT_PATH) if os.path.isdir(INPUT_PATH + '/' + dir)]
-for dir in dirs:
-    if dir in series_dict:
-        print(dir)
-        series_to_write.append(series_dict[dir])
-        dest = series_dict[dir]['ImgDir']
-        #os.rename(INPUT_PATH +  '/' + dir, dest)
+# series_to_write = []
+# indent = ' ' * 4
+# dirs = [dir for dir in os.listdir(INPUT_PATH) if os.path.isdir(INPUT_PATH + '/' + dir)]
+# for dir in dirs:
+#     if dir in series_dict:
+#         print(dir)
+#         series_to_write.append(series_dict[dir])
+#         dest = series_dict[dir]['ImgDir']
+#         #os.rename(INPUT_PATH +  '/' + dir, dest)
 
-# Write ProjSubList.in
-with open(INPUT_PATH + '/' + 'ProjSubjList.in', 'w') as f:
-    f.write('Proj' + indent + 'Subj' + indent + 'Img' + indent + 'Imgdir' + '\n')
-    for series in series_to_write:
-        f.write(series['Proj'] + indent + series['Subj'] + indent + series['Img'] + indent + series['ImgDir'] + '\n')
+# # Write ProjSubList.in
+# with open(INPUT_PATH + '/' + 'ProjSubjList.in', 'w') as f:
+#     f.write('Proj' + indent + 'Subj' + indent + 'Img' + indent + 'Imgdir' + '\n')
+#     for series in series_to_write:
+#         f.write(series['Proj'] + indent + series['Subj'] + indent + series['Img'] + indent + series['ImgDir'] + '\n')
 
