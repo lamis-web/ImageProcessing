@@ -301,7 +301,7 @@ for _, row in excel_data.iterrows():
     subj_id = row['Subj']
     mrn = str(row['mrn']).zfill(7)
     ctdate = row['date'].strftime('%Y%m%d') if type(
-         row['date']) == pd.Timestamp else ''
+        row['date']) == pd.Timestamp else ''
     if ctdate == '':
         logger.warning(f'{subj_id} cannot get ctdate from {excel_path}')
     key = mrn + '_' + ctdate + '_all'
