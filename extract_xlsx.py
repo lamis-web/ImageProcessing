@@ -18,7 +18,7 @@ for _, row in excel_data.iterrows():
 
     subj = accession_number.split('_')[0]
     img = accession_number.split('_')[1]
-    path = os.path.abspath(INPUT_PATH) + '/' + accession_number
+    path = os.path.abspath(INPUT_PATH) + '/' + case_id
 
     series_dict[case_id] = {
         'Proj': PROJ,
@@ -52,7 +52,7 @@ for dir in dirs:
         print(dir)
         series_to_write.append(series_dict[dir])
         dest = series_dict[dir]['ImgDir']
-        os.rename(INPUT_PATH +  '/' + dir, dest)
+        #os.rename(INPUT_PATH +  '/' + dir, dest)
 
 # Write ProjSubList.in
 with open(INPUT_PATH + '/' + 'ProjSubjList.in', 'w') as f:
