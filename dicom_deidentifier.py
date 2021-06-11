@@ -124,7 +124,7 @@ print('----- Done')
 print('>>> Writing selected metadata to dicom_metadata_selected.csv', end=' ')
 with open(dst_dicom_path + '/dicom_metadata_selected.csv', 'w', newline='') as output_csv:
     csv_columns = ['mrn', 'study_date', 'patient_name', 'patient_id',
-                   'slice_thickness', 'number_of_slices', 'study_description', 'series_description']
+                   'slice_thickness', 'number_of_slices', 'study_description', 'series_description', 'path']
     writer = csv.DictWriter(output_csv, fieldnames=csv_columns)
     writer.writeheader()
     for series_uid in dicom_series:
