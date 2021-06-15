@@ -17,7 +17,7 @@ parser.add_argument('src', metavar='src', type=str,
 parser.add_argument('dst', metavar='dst', type=str,
                     help='DICOM destination folder path')
 parser.add_argument('xls', metavar='xls', type=str,
-                    help='Excel metadata sheet path')
+                    help='Carissa Excel metadata sheet path')
 args = parser.parse_args()
 
 # Create a logger
@@ -283,7 +283,7 @@ def parse_series_description(series_description: str) -> str:
 
 # Construct {'Series_UID' : ['Subj_ID', 'Img_ID']} from Excel metadata sheet
 print('>>> Construct subjID & imgID from excel metadata sheet', end='')
-excel_data = pd.read_excel(excel_path, header=8, usecols='A,C,I,J')
+excel_data = pd.read_excel(excel_path, header=9, usecols='A,C,I,J')
 series_id_dict = {}
 for _, row in excel_data.iterrows():
     subj_id = row['Subj']
