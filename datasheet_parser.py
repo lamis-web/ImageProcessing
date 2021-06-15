@@ -12,7 +12,7 @@ DCM_PATH_PREFIX = ''
 
 parsed_data = pd.read_excel(EXCEL_PATH, sheet_name=0)
 vida_raw_data = pd.read_excel(EXCEL_PATH, sheet_name=1)
-mrn_ctdate_data = pd.read_excel(MRN_CTDATE_PATH, header=8)
+mrn_ctdate_data = pd.read_excel(MRN_CTDATE_PATH, header=9)
 
 #start_vida_case_number = parsed_data.iloc[-1]['VidaCaseID'] + 1
 start_vida_case_number = 960
