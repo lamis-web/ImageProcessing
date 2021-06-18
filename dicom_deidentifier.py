@@ -17,7 +17,7 @@ parser.add_argument('src', metavar='src', type=str,
 parser.add_argument('dst', metavar='dst', type=str,
                     help='DICOM destination folder path')
 parser.add_argument('xls', metavar='xls', type=str,
-                    help='Excel metadata sheet path')
+                    help='Carissa Excel metadata sheet path')
 args = parser.parse_args()
 
 # Create a logger
@@ -124,7 +124,7 @@ print('----- Done')
 print('>>> Writing selected metadata to dicom_metadata_selected.csv', end=' ')
 with open(dst_dicom_path + '/dicom_metadata_selected.csv', 'w', newline='') as output_csv:
     csv_columns = ['mrn', 'study_date', 'patient_name', 'patient_id',
-                   'slice_thickness', 'number_of_slices', 'study_description', 'series_description']
+                   'slice_thickness', 'number_of_slices', 'study_description', 'series_description', 'path']
     writer = csv.DictWriter(output_csv, fieldnames=csv_columns)
     writer.writeheader()
     for series_uid in dicom_series:
@@ -151,6 +151,14 @@ def deidentify_and_save(dicom_input_path, dicom_output_path, subj_id):
     except:
         logger.error(f'{dicom_input_path} - PatientID Header does not exist')
         return
+    if dicom_slice.get('AccessionNumber'):
+        dicom_slice.AccessionNumber = subj_id + "_" + img_id
+        logger.info(f'{dicom_input_path} - AccessionNumber Header Processed')
+    else:
+        logger.warning(
+            f'{dicom_input_path} - AccessionNumber Header does not exist: Appending Header')
+        dicom_slice.add_new([0x0006, 0x0050], dictionary_VR(
+            [0x0006, 0x0050]), subj_id + "_" + img_id)
     # if dicom_slice.get('PatientBirthDate'):
     #     dicom_slice.PatientBirthDate = str(
     #         int(dicom_slice.PatientBirthDate) + (randint(1, 500) * 10000))
@@ -158,14 +166,6 @@ def deidentify_and_save(dicom_input_path, dicom_output_path, subj_id):
     # else:
     #     logger.warning(
     #         f'{dicom_input_path} - PatientBirthDate Header does not exist')
-    # if dicom_slice.get('AccessionNumber'):
-    #     dicom_slice.AccessionNumber = subj_id + "_" + img_id
-    #     logger.info(f'{dicom_input_path} - AccessionNumber Header Processed')
-    # else:
-    #     logger.warning(
-    #         f'{dicom_input_path} - AccessionNumber Header does not exist: Appending Header')
-    #     dicom_slice.add_new([0x0008, 0x0050], dictionary_VR(
-    #         [0x0008, 0x0050]), subj_id + "_" + img_id)
     # if dicom_slice.get('StudyDate'):
     #     dicom_slice.StudyDate = str(
     #         int(dicom_slice.StudyDate) + (randint(1, 5)))  <FIX -> day % 28>
@@ -283,7 +283,7 @@ def parse_series_description(series_description: str) -> str:
 
 # Construct {'Series_UID' : ['Subj_ID', 'Img_ID']} from Excel metadata sheet
 print('>>> Construct subjID & imgID from excel metadata sheet', end='')
-excel_data = pd.read_excel(excel_path, header=8, usecols='A,C,I,J')
+excel_data = pd.read_excel(excel_path, header=9, usecols='A,C,I,J')
 series_id_dict = {}
 for _, row in excel_data.iterrows():
     subj_id = row['Subj']

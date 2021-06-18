@@ -20,8 +20,8 @@ parser.add_argument('xls', metavar='xls', type=str,
 args = parser.parse_args()
 
 # Create a logger
-logging.basicConfig(filename='dicom_deidentifier.log', level=logging.WARNING,
-                    filemode='a', format='%(levelname)s - %(message)s')
+logging.basicConfig(filename='metadata_log', level=logging.WARNING,
+                    filemode='w', format='%(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 src_dicom_path = args.src

@@ -18,6 +18,7 @@ mrn_ctdate_data = pd.read_excel(MRN_CTDATE_PATH, header=9)
 start_vida_case_number = 1381
 vida_dashboard_data = vida_dashboard_data[vida_dashboard_data['Case ID']
                                           >= start_vida_case_number]
+
 # subj_dict = {}
 # for _, row in mrn_ctdate_data.iterrows():
 #     mrn = row['mrn']
@@ -89,6 +90,7 @@ def construct_new_rows(vida_dashboard_data):
 
         # if row['Vida Status'] == 'Success':
         # rows_to_append.append(row)
+
         rows_to_append.append(row)
 
     return pd.DataFrame(rows_to_append)
@@ -176,5 +178,6 @@ def append_df_to_excel(filename, df, sheet_name='Sheet1', startrow=None,
 
 
 df = construct_new_rows(vida_dashboard_data)
+
 append_df_to_excel(EXCEL_PATH, df, sheet_name='Sheet1',
                    header=None, index=False)
