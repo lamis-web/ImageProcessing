@@ -4,56 +4,78 @@ import datetime
 from openpyxl import load_workbook
 
 PROJ = 'C19'
-HOSPITAL = 'KU'
 DISEASE = 'COVID-19'
-CASE_START_INDEX = 1000
-EXCEL_PATH = './choilab_datasheet copy.xlsx'
-MRN_CTDATE_PATH = './carisa_datasheet.xlsx'
-VIDA_PATH_PREFIX = 'E:\\jchoi4\\ImageData\\VIDA_20210608-09_C19_TK\\'
+
+EXCEL_PATH = './DataSheet_20210616.xlsx'
+MRN_CTDATE_PATH = './COVID_CTs_20210513CarissaWalter_0608jc_20210616.xlsx'
+VIDA_PATH_PREFIX = ''
 DCM_PATH_PREFIX = ''
 
 parsed_data = pd.read_excel(EXCEL_PATH, sheet_name=0)
-raw_data = pd.read_excel(EXCEL_PATH, sheet_name=1)
-mrn_ctdate_data = pd.read_excel(MRN_CTDATE_PATH, header=8)
+vida_dashboard_data = pd.read_excel(EXCEL_PATH, sheet_name=1)
+mrn_ctdate_data = pd.read_excel(MRN_CTDATE_PATH, header=9)
 
-subj_dict = {}
+start_vida_case_number = 1381
+vida_dashboard_data = vida_dashboard_data[vida_dashboard_data['Case ID']
+                                          >= start_vida_case_number]
+# subj_dict = {}
+# for _, row in mrn_ctdate_data.iterrows():
+#     mrn = row['mrn']
+#     ctdate = row['date'].strftime('%Y%m%d') if type(
+#         row['date']) == datetime.datetime else ''
+#     subj_id = row['Subj']
+#     img_id = str(row['Time'])
+#     subj = subj_id + '_' + 'IN' + img_id
+#     subj_dict[subj] = [mrn, ctdate]
+
+subj_ctdate_dict = {}
 for _, row in mrn_ctdate_data.iterrows():
     mrn = row['mrn']
     ctdate = row['date'].strftime('%Y%m%d') if type(
-        row['date']) == datetime.datetime else ''
-    subj_id = PROJ + HOSPITAL + str(CASE_START_INDEX + row['SubjNum'])
+        row['date']) == pd.Timestamp else ''
+    subj_id = row['Subj']
     img_id = str(row['Time'])
-    subj = subj_id + '_' + 'IN' + img_id
-    subj_dict[subj] = [mrn, ctdate]
+    subj = subj_id + '_' + ctdate
+    subj_ctdate_dict[subj] = [mrn, img_id]
 
 
-def construct_new_rows(parsed_data, raw_data):
+def construct_new_rows(vida_dashboard_data):
     last_row_parsed = parsed_data.iloc[-1]
-    last_row_raw = raw_data.iloc[-1]
+    last_row_raw = vida_dashboard_data.iloc[-1]
     start_index = last_row_parsed['VidaCaseID'] + 1
     end_index = last_row_raw['Case ID'] + 1
 
     rows_to_append = []
-    for i in range(603, end_index):
+    for i in range(start_index, end_index):
         row = {}
-        row_data_raw = raw_data.loc[raw_data['Case ID'] == i]
+        row_data_raw = vida_dashboard_data.loc[vida_dashboard_data['Case ID'] == i]
 
         if row_data_raw.empty:
             print(f'Case ID {i} info does not exist')
             continue
 
-        accession_number = row_data_raw['Accession Number'].tolist()[0]
-        subj_id = accession_number.split('_')[0]
-        img_id = accession_number.split('_')[1]
+        #accession_number = row_data_raw['Accession Number'].tolist()[0]
+        #subj_id = accession_number.split('_')[0]
+        #img_id = accession_number.split('_')[1]
+        subj_id = row_data_raw['Patient ID'].tolist()[0].split('_')[0]
+        ctdate = row_data_raw['Acquisition Date'].tolist()[
+            0].strftime('%Y%m%d')
+        try:
+            img_id = 'IN' + subj_ctdate_dict[subj_id + '_' + ctdate][1]
+            mrn = subj_ctdate_dict[subj_id + '_' + ctdate][0]
+        except:
+            print(f'{subj_id} + {ctdate} cant be found')
 
         row['Proj'] = PROJ
         row['Subj'] = subj_id
         row['VidaCaseID'] = i
         row['VidaBy'] = ''
-        row['MRN'] = subj_dict[subj_id + '_' + img_id][0]
+        # row['MRN'] = subj_dict[subj_id + '_' + img_id][0]
+        row['MRN'] = mrn
         row['Vida Progress'] = row_data_raw['Process status'].tolist()[0]
         row['Progress'] = 'DL Segmentation Done'
-        row['ScanDate'] = subj_dict[subj_id + '_' + img_id][1]
+        # row['ScanDate'] = subj_dict[subj_id + '_' + img_id][1]
+        row['ScanDate'] = ctdate
         row['IN/EX'] = img_id
         row['CT Protocol'] = row_data_raw['Series Desc'].tolist()[0]
         row['Disease'] = DISEASE
@@ -66,7 +88,7 @@ def construct_new_rows(parsed_data, raw_data):
         row['Report path'] = DCM_PATH_PREFIX
 
         # if row['Vida Status'] == 'Success':
-        #     rows_to_append.append(row)
+        # rows_to_append.append(row)
         rows_to_append.append(row)
 
     return pd.DataFrame(rows_to_append)
@@ -153,6 +175,6 @@ def append_df_to_excel(filename, df, sheet_name='Sheet1', startrow=None,
     writer.save()
 
 
-df = construct_new_rows(parsed_data, raw_data)
+df = construct_new_rows(vida_dashboard_data)
 append_df_to_excel(EXCEL_PATH, df, sheet_name='Sheet1',
                    header=None, index=False)
