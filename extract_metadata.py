@@ -52,6 +52,15 @@ def extract_dicom_header(
             dicom_series[series_uid]['series_description'] = dicom_img.SeriesDescription
         except:
             dicom_series[series_uid]['series_description'] = ''
+        try:
+            dicom_series[series_uid]['name'] = dicom_img.PatientName
+        except:
+            dicom_series[series_uid]['name'] = ''
+        try:
+            dicom_series[series_uid]['birthdate'] = dicom_img.PatientBirthDate
+        except:
+            dicom_series[series_uid]['birthdate'] = ''
+
         if dicom_img.get('SliceThickness'):
             dicom_series[series_uid]['slice_thickness'] = dicom_img.SliceThickness
         else:
@@ -88,7 +97,7 @@ def walkdir(src):
 
 # Construct series_id_dict from Excel metadata sheet
 print('>>> Construct subjID & imgID from excel metadata sheet', end='')
-excel_data = pd.read_excel(excel_path, header=8, usecols='A,C,I,J')
+excel_data = pd.read_excel(excel_path, header=9, usecols='A,C,I,J')
 for _, row in excel_data.iterrows():
     subj_id = row['Subj']
     mrn = str(row['mrn']).zfill(7)
@@ -115,7 +124,7 @@ for dicom_slice_path in tqdm(walkdir(src_dicom_path), total=file_count):
 # write to csv
 print('>>> Writing all metadata to dicom_metadata_all.csv', end=' ')
 with open(dst_dicom_path + '/dicom_metadata_all.csv', 'w', newline='') as output_csv:
-    csv_columns = ['subj', 'img', 'mrn', 'study_date', 'slice_thickness',
+    csv_columns = ['subj', 'img', 'mrn', 'study_date', 'name', 'birthdate', 'slice_thickness',
                    'number_of_slices', 'study_description', 'series_description', 'path']
     writer = csv.DictWriter(output_csv, fieldnames=csv_columns)
     writer.writeheader()
@@ -146,7 +155,7 @@ print('----- Done')
 # write to csv
 print('>>> Writing selected metadata to dicom_metadata_selected.csv', end=' ')
 with open(dst_dicom_path + '/dicom_metadata_selected.csv', 'w', newline='') as output_csv:
-    csv_columns = ['subj', 'img', 'mrn', 'study_date', 'slice_thickness',
+    csv_columns = ['subj', 'img', 'mrn', 'study_date', 'name', 'birthdate', 'slice_thickness',
                    'number_of_slices', 'study_description', 'series_description', 'path']
     writer = csv.DictWriter(output_csv, fieldnames=csv_columns)
     writer.writeheader()
