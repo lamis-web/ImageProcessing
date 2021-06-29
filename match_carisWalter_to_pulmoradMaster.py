@@ -31,7 +31,6 @@ for _, row in CW_DATA.iterrows():
             if row['first_name'] == subj['first_name'].upper():
                 patient_set.add(row['mrn'])
 # print(patient_set)
-print(len(patient_set))
 
 mrn_set = {0}
 for _, row in PM_DATA.iterrows():
@@ -42,4 +41,6 @@ for _, row in CW_DATA.iterrows():
     if row['mrn'] in mrn_set:
         mrn_set.remove(row['mrn'])
         count += 1
-print(count)
+
+print(f'matching patients looking at mrn: {count}')
+print(f'matching patients looking at birthdate, name: {len(patient_set)}')
