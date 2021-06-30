@@ -29,13 +29,14 @@ for case in CASE_ID_LIST:
         print(f'Cannot find case id {case}')
 
 # Create ProjSubjList.in
-case_data_df = case_data_df.to_csv(index=False, line_terminator='\n').replace(',', '    ')
+case_data_df = case_data_df.to_csv(
+    index=False, line_terminator='\n').replace(',', '    ')
 with open('Data_to_send/ProjSubjList.in', 'w') as f:
     f.write(case_data_df)
 
-# # Compress VIDA cases into one tar file
-# with tarfile.open(OUTPUT_TAR_FILE_PATH, 'w:bz2') as tar:
-#     for case in tqdm(CASE_ID_LIST):
-#         tar.add(Path(f'{VIDA_VISION_PATH}/{case}'))
+# Compress VIDA cases into one tar file
+with tarfile.open(OUTPUT_TAR_FILE_PATH, 'w:bz2') as tar:
+    for case in tqdm(CASE_ID_LIST):
+        tar.add(Path(f'{VIDA_VISION_PATH}/{case}'))
 
 # Send data to B2
