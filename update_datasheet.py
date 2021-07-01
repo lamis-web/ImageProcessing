@@ -1,100 +1,59 @@
+# Usage
+# - python update_datasheet.py
+# Input
+# - Datasheet.xlsx
+# - COVID_CTs_20210513CarissaWalter_0608jc.xlsx
+
 import pandas as pd
 import os
-import datetime
 from openpyxl import load_workbook
 
 PROJ = 'C19'
 DISEASE = 'COVID-19'
 
-EXCEL_PATH = './DataSheet_20210616.xlsx'
-MRN_CTDATE_PATH = './COVID_CTs_20210513CarissaWalter_0608jc_20210616.xlsx'
+EXCEL_PATH = 'Data/Datasheet/DataSheet.xlsx'
+MRN_CTDATE_PATH = 'Data/CarissaWalter/COVID_CTs_20210513CarissaWalter_0608jc.xlsx'
 VIDA_PATH_PREFIX = ''
 DCM_PATH_PREFIX = ''
 
-parsed_data = pd.read_excel(EXCEL_PATH, sheet_name=0)
-vida_dashboard_data = pd.read_excel(EXCEL_PATH, sheet_name=1)
-mrn_ctdate_data = pd.read_excel(MRN_CTDATE_PATH, header=9)
+datasheet_df = pd.read_excel(EXCEL_PATH, sheet_name=0)
+vida_dashboard_df = pd.read_excel(EXCEL_PATH, sheet_name=1)
+carissa_df = pd.read_excel(MRN_CTDATE_PATH, header=9)
 
-start_vida_case_number = 1381
-vida_dashboard_data = vida_dashboard_data[vida_dashboard_data['Case ID']
-                                          >= start_vida_case_number]
+start_vida_case_number = int(datasheet_df.iloc[-1]['VidaCaseID'])
+vida_dashboard_df = vida_dashboard_df[vida_dashboard_df['Case ID'] > start_vida_case_number]
+merged_df = pd.merge(vida_dashboard_df, carissa_df, how="inner", left_on='Patient ID', right_on='Subj')
 
-# subj_dict = {}
-# for _, row in mrn_ctdate_data.iterrows():
-#     mrn = row['mrn']
-#     ctdate = row['date'].strftime('%Y%m%d') if type(
-#         row['date']) == datetime.datetime else ''
-#     subj_id = row['Subj']
-#     img_id = str(row['Time'])
-#     subj = subj_id + '_' + 'IN' + img_id
-#     subj_dict[subj] = [mrn, ctdate]
-
-subj_ctdate_dict = {}
-for _, row in mrn_ctdate_data.iterrows():
-    mrn = row['mrn']
-    ctdate = row['date'].strftime('%Y%m%d') if type(
-        row['date']) == pd.Timestamp else ''
-    subj_id = row['Subj']
-    img_id = str(row['Time'])
-    subj = subj_id + '_' + ctdate
-    subj_ctdate_dict[subj] = [mrn, img_id]
-
-
-def construct_new_rows(vida_dashboard_data):
-    last_row_parsed = parsed_data.iloc[-1]
-    last_row_raw = vida_dashboard_data.iloc[-1]
-    start_index = last_row_parsed['VidaCaseID'] + 1
-    end_index = last_row_raw['Case ID'] + 1
-
+def construct_new_rows(merged_df):
     rows_to_append = []
-    for i in range(start_index, end_index):
+    for _, df_row in merged_df.iterrows():
         row = {}
-        row_data_raw = vida_dashboard_data.loc[vida_dashboard_data['Case ID'] == i]
-
-        if row_data_raw.empty:
-            print(f'Case ID {i} info does not exist')
-            continue
-
-        #accession_number = row_data_raw['Accession Number'].tolist()[0]
-        #subj_id = accession_number.split('_')[0]
-        #img_id = accession_number.split('_')[1]
-        subj_id = row_data_raw['Patient ID'].tolist()[0].split('_')[0]
-        ctdate = row_data_raw['Acquisition Date'].tolist()[
-            0].strftime('%Y%m%d')
-        try:
-            img_id = 'IN' + subj_ctdate_dict[subj_id + '_' + ctdate][1]
-            mrn = subj_ctdate_dict[subj_id + '_' + ctdate][0]
-        except:
-            print(f'{subj_id} + {ctdate} cant be found')
+        accession_number = df_row['Accession Number']
+        subj_id = accession_number.split('_')[0]
+        img_id = accession_number.split('_')[1]
 
         row['Proj'] = PROJ
         row['Subj'] = subj_id
-        row['VidaCaseID'] = i
+        row['VidaCaseID'] = df_row['Case ID']
         row['VidaBy'] = ''
-        # row['MRN'] = subj_dict[subj_id + '_' + img_id][0]
-        row['MRN'] = mrn
-        row['Vida Progress'] = row_data_raw['Process status'].tolist()[0]
+        row['MRN'] = df_row['mrn']
+        row['Vida Progress'] = df_row['Process status']
         row['Progress'] = 'DL Segmentation Done'
-        # row['ScanDate'] = subj_dict[subj_id + '_' + img_id][1]
-        row['ScanDate'] = ctdate
+        row['ScanDate'] = int(df_row['date'].strftime('%Y%m%d')) if type(df_row['date']) == pd.Timestamp else ''
         row['IN/EX'] = img_id
-        row['CT Protocol'] = row_data_raw['Series Desc'].tolist()[0]
+        row['CT Protocol'] = df_row['Series Desc']
         row['Disease'] = DISEASE
-        row['SliceThickness_mm'] = row_data_raw['Slice Thickness'].tolist()[0]
-        row['ScannerVender'] = row_data_raw['Scanner'].tolist()[0]
-        row['ScannerModel'] = row_data_raw['Scanner Model'].tolist()[0]
-        row['Kernel'] = row_data_raw['Kernel'].tolist()[0]
+        row['SliceThickness_mm'] = df_row['Slice Thickness']
+        row['ScannerVender'] = df_row['Scanner']
+        row['ScannerModel'] = df_row['Scanner Model']
+        row['Kernel'] = df_row['Kernel']
         row['Comments'] = ''
-        row['VIDA path'] = VIDA_PATH_PREFIX + str(i)
+        row['VIDA path'] = VIDA_PATH_PREFIX
         row['Report path'] = DCM_PATH_PREFIX
 
-        # if row['Vida Status'] == 'Success':
-        # rows_to_append.append(row)
-
         rows_to_append.append(row)
-
+    
     return pd.DataFrame(rows_to_append)
-
 
 def append_df_to_excel(filename, df, sheet_name='Sheet1', startrow=None,
                        truncate_sheet=False,
@@ -176,8 +135,5 @@ def append_df_to_excel(filename, df, sheet_name='Sheet1', startrow=None,
     # save the workbook
     writer.save()
 
-
-df = construct_new_rows(vida_dashboard_data)
-
-append_df_to_excel(EXCEL_PATH, df, sheet_name='Sheet1',
-                   header=None, index=False)
+new_rows_df = construct_new_rows(merged_df)
+append_df_to_excel(EXCEL_PATH, new_rows_df, sheet_name='Sheet1', header=None, index=False)

@@ -1,6 +1,14 @@
+# Usage
+# - python dicom_deidentifier.py {./src_folder} {./dest_folder} {./Data/CarrissaWalter/COVID_CTs_20210513CarissaWalter_0608jc.xlsx}
+# Input
+# - dicom_source_folder_path
+# - deidentified_dicom_destination_folder_path
+# - CarrissaWalter_datasheet_path
+# Output
+# - Deidentified dicom series in the destination path
+
 from pydicom import dcmread
 from pydicom.datadict import dictionary_VR
-from random import randint
 from tqdm import tqdm
 import pandas as pd
 import argparse

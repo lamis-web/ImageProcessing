@@ -1,3 +1,6 @@
+# Usage
+# - python prepare_ProjSubjList.py
+
 from datetime import datetime
 import tarfile
 from pathlib import Path
