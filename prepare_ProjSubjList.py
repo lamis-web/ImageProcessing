@@ -1,13 +1,16 @@
+from datetime import datetime
 import tarfile
 from pathlib import Path
 import pandas as pd
 from tqdm import tqdm
 
+PROJ = 'C19'
 CASE_ID_LIST = [960, 968, 962, 964, 991, 990, 1001, 1002, 1006, 1005]
+OUTPUT_FOLDER_NAME = 'VIDA_20210623-23_C19_TK'
+PATH_IN_B2 = f'/data4/common/C19/{OUTPUT_FOLDER_NAME}'
+OUTPUT_TAR_FILE_PATH = f'Data_to_send/{OUTPUT_FOLDER_NAME}.tar.bz2'
 DATASHEET_PATH = 'Data/Datasheet/DataSheet.xlsx'
 VIDA_VISION_PATH = 'E:/VIDA/VIDAvision2.2'
-PATH_IN_B2 = '/data4/common/C19'
-OUTPUT_TAR_FILE_PATH = 'Data_to_send/VIDA_20210623-23_C19_TK.tar.bz2'
 
 # Construct Dataframe for ProjSubjList.in from Datasheet.xlsx
 datasheet_df = pd.read_excel(DATASHEET_PATH, usecols='A:C,I')
@@ -20,7 +23,7 @@ for case in CASE_ID_LIST:
         for k1, v1 in row.to_dict().items():
             for k2, v2 in v1.items():
                 temp_dict[k1] = v2
-        temp_dict['ImgDir'] = f'{PATH_IN_B2}/VIDA/VIDAvision2.2/{case}'
+        temp_dict['ImgDir'] = f'{PATH_IN_B2}/{case}'
         case_data_list.append(temp_dict)
         case_data_df = pd.DataFrame(case_data_list)
         case_data_df.rename(columns={'IN/EX': 'Img'}, inplace=True)
@@ -29,9 +32,10 @@ for case in CASE_ID_LIST:
         print(f'Cannot find case id {case}')
 
 # Create ProjSubjList.in
+today = datetime.today().strftime('%Y%m%d')
 case_data_df = case_data_df.to_csv(
     index=False, line_terminator='\n').replace(',', '    ')
-with open('Data_to_send/ProjSubjList.in', 'w') as f:
+with open(f'Data_to_send/ProjSubjList.in.{today}_{PROJ}', 'w') as f:
     f.write(case_data_df)
 
 # Compress VIDA cases into one tar file

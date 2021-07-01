@@ -1,5 +1,6 @@
 .direnv/
 .envrc
+temp_scripts/
 sample_dicom/
 sample_output/
 sample_dicom_input/
