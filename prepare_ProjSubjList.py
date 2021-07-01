@@ -1,12 +1,13 @@
 # Usage
 # - python prepare_ProjSubjList.py
 
+import subprocess
 from datetime import datetime
 import tarfile
 from pathlib import Path
 import pandas as pd
 from tqdm import tqdm
-# from dotenv import dotenv_values
+from dotenv import dotenv_values
 # import paramiko
 # from scp import SCPClient
 
@@ -56,7 +57,15 @@ with tarfile.open(f'{OUTPUT_PATH}/{OUTPUT_FOLDER_NAME}.tar.bz2', 'w:bz2') as tar
         tar.add(Path(f'{VIDA_VISION_PATH}/{case}'), f'{OUTPUT_FOLDER_NAME}/{case}')
 
 
-# print('>>>  Send Data to B2')
+print('>>>  Send Data to B2')
+ssh_config = dotenv_values('.env')
+port = ssh_config['SSH_PORT']
+host = ssh_config['SSH_HOST']
+user = ssh_config['SSH_USERNAME']
+scp_process_1 = subprocess.run(['scp', '-P', port, f'{OUTPUT_PATH}/{projSubjListTitle}', f'{user}@{host}:{PATH_IN_B2}/'])
+scp_process_2 = subprocess.run(['scp', '-P', port, f'{OUTPUT_PATH}/{OUTPUT_FOLDER_NAME}.tar.bz2', f'{user}@{host}:{PATH_IN_B2}/'])
+
+# SFTP using paramiko
 # class FastTransport(paramiko.Transport):
 #     def __init__(self, sock):
 #         super(FastTransport, self).__init__(sock)
@@ -72,6 +81,7 @@ with tarfile.open(f'{OUTPUT_PATH}/{OUTPUT_FOLDER_NAME}.tar.bz2', 'w:bz2') as tar
 # sftp.put(f'{OUTPUT_PATH}/{OUTPUT_FOLDER_NAME}.tar.bz2', f'{PATH_IN_B2}/{OUTPUT_FOLDER_NAME}.tar.bz2')
 # sftp.close()
 
+# SCP using paramiko
 # ssh = SSHClient()
 # ssh.load_system_host_keys()
 # ssh.connect(ssh_config['SSH_HOST'], port=ssh_config['SSH_PORT'], username=ssh_config['SSH_USERNAME'], password=ssh_config['SSH_PW'], look_for_keys=False)
