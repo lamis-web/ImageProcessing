@@ -1,9 +1,10 @@
 # Usage
-# - python dicom_deidentifier.py {./src_folder} {./dest_folder} {./Data/CarrissaWalter/COVID_CTs_20210513CarissaWalter_0608jc.xlsx}
+# - python dicom_deidentifier.py {./src_folder} {./dest_folder}
+# Dependency
+# - COVID_CTs_20210513CarissaWalter_0608jc.xlsx
 # Input
 # - dicom_source_folder_path
 # - deidentified_dicom_destination_folder_path
-# - CarrissaWalter_datasheet_path
 # Output
 # - Deidentified dicom series in the destination path
 
@@ -24,8 +25,6 @@ parser.add_argument('src', metavar='src', type=str,
                     help='DICOM source folder path')
 parser.add_argument('dst', metavar='dst', type=str,
                     help='DICOM destination folder path')
-parser.add_argument('xls', metavar='xls', type=str,
-                    help='Carissa Excel metadata sheet path')
 args = parser.parse_args()
 
 # Create a logger
@@ -35,7 +34,7 @@ logger = logging.getLogger(__name__)
 
 src_dicom_path = args.src
 dst_dicom_path = args.dst
-excel_path = args.xls
+excel_path = 'Data/CarissaWalter/COVID_CTs_20210513CarissaWalter_0608jc.xlsx'
 
 dicom_series = {}  # {SeriesInstanceUID : {Series Data}}
 dicom_series_paths = {}  # {SeriesInstanceUID : [Img Paths]}

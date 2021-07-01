@@ -1,6 +1,6 @@
 # Usage
 # - python update_datasheet.py
-# Input
+# Dependency
 # - Datasheet.xlsx
 # - COVID_CTs_20210513CarissaWalter_0608jc.xlsx
 

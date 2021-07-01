@@ -1,7 +1,14 @@
-# Usage
-# - python prepare_ProjSubjList.py
+# Usage Example
+# - python prepare_ProjSubjList.py /e/jchoi4/ImageData/C19/VIDA_20210701-01_C19_TK
+# Input
+# - VIDA results folder path
+# Dependency
+# - DataSheet.xlsx
 
+import os
+import sys
 import subprocess
+import argparse
 from datetime import datetime
 import tarfile
 from pathlib import Path
@@ -11,14 +18,22 @@ from dotenv import dotenv_values
 # import paramiko
 # from scp import SCPClient
 
+parser = argparse.ArgumentParser(
+    description='Prepare ProjSubjList.in, Compressed zip of VIDA results and send it to the B2')
+parser.add_argument('src', metavar='src', type=str,
+                    help='VIDA results source folder path')
+args = parser.parse_args()
 
 PROJ = 'C19'
-CASE_ID_LIST = [960]
-OUTPUT_FOLDER_NAME = f'VIDA_20210701-01_{PROJ}_TK'
+VIDA_RESULTS_PATH = args.src
+try:
+    CASE_ID_LIST = [int(case) for case in os.listdir(VIDA_RESULTS_PATH)]
+except:
+    sys.exit('Error: Unexpected data included in source path')
+OUTPUT_FOLDER_NAME = VIDA_RESULTS_PATH.split('/')[-1] if VIDA_RESULTS_PATH.split('/')[-1] != '' else VIDA_RESULTS_PATH.split('/')[-2]
 PATH_IN_B2 = f'/data4/common/{PROJ}'
 OUTPUT_PATH = 'Data_to_send'
 DATASHEET_PATH = 'Data/Datasheet/DataSheet.xlsx'
-VIDA_VISION_PATH = 'E:/VIDA/VIDAvision2.2'
 
 
 print('>>> Construct Dataframe for ProjSubjList.in from Datasheet.xlsx', end=' ')
@@ -51,13 +66,13 @@ with open(f'{OUTPUT_PATH}/{projSubjListTitle}', 'w') as f:
 print('----- Done')
 
 
-print('>>>  Compress VIDA results into one tar file')
+print('>>> Compress VIDA results into one tar file')
 with tarfile.open(f'{OUTPUT_PATH}/{OUTPUT_FOLDER_NAME}.tar.bz2', 'w:bz2') as tar:
     for case in tqdm(CASE_ID_LIST):
-        tar.add(Path(f'{VIDA_VISION_PATH}/{case}'), f'{OUTPUT_FOLDER_NAME}/{case}')
+        tar.add(Path(f'{VIDA_RESULTS_PATH}/{case}'), f'{OUTPUT_FOLDER_NAME}/{case}')
 
 
-print('>>>  Send Data to B2')
+print('>>> Send Data to B2')
 ssh_config = dotenv_values('.env')
 port = ssh_config['SSH_PORT']
 host = ssh_config['SSH_HOST']
