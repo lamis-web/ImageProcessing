@@ -28,7 +28,7 @@ parser.add_argument('dst', metavar='dst', type=str,
 args = parser.parse_args()
 
 # Create a logger
-logging.basicConfig(filename='dicom_deidentifier.log', level=logging.WARNING,
+logging.basicConfig(filename='Output/deidentifier.log', level=logging.WARNING,
                     filemode='a', format='%(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
