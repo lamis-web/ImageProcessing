@@ -164,8 +164,8 @@ def deidentify_and_save(dicom_input_path, dicom_output_path, subj_id):
     else:
         logger.warning(
             f'{dicom_input_path} - AccessionNumber Header does not exist: Appending Header')
-        dicom_slice.add_new([0x0006, 0x0050], dictionary_VR(
-            [0x0006, 0x0050]), subj_id + "_" + img_id)
+        dicom_slice.add_new([0x0008, 0x0050], dictionary_VR(
+            [0x0008, 0x0050]), subj_id + "_" + img_id)
     # if dicom_slice.get('PatientBirthDate'):
     #     dicom_slice.PatientBirthDate = str(
     #         int(dicom_slice.PatientBirthDate) + (randint(1, 500) * 10000))
@@ -333,6 +333,8 @@ for series_uid in tqdm(dicom_series):
         dst_dicom_path, dicom_destination_folder_name)
     if not os.path.exists(dicom_destination_folder_path):
         os.makedirs(dicom_destination_folder_path)
+    else:
+        continue
 
     for dicom_source_slice_path in dicom_source_paths:
         dicom_source_slice_filename = os.path.basename(dicom_source_slice_path)
