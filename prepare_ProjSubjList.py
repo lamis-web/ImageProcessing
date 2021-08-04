@@ -15,70 +15,94 @@ from pathlib import Path
 import pandas as pd
 from tqdm import tqdm
 from dotenv import dotenv_values
+
 # import paramiko
 # from scp import SCPClient
 
 parser = argparse.ArgumentParser(
-    description='Prepare ProjSubjList.in, Compressed zip of VIDA results and send it to the B2')
-parser.add_argument('src', metavar='src', type=str,
-                    help='VIDA results source folder path')
+    description="Prepare ProjSubjList.in, Compressed zip of VIDA results and send it to the B2"
+)
+parser.add_argument(
+    "src", metavar="src", type=str, help="VIDA results source folder path"
+)
 args = parser.parse_args()
 
-PROJ = 'C19'
+PROJ = "C19"
 VIDA_RESULTS_PATH = args.src
 try:
     CASE_ID_LIST = [int(case) for case in os.listdir(VIDA_RESULTS_PATH)]
 except:
-    sys.exit('Error: Unexpected data included in source path')
-OUTPUT_FOLDER_NAME = VIDA_RESULTS_PATH.split('/')[-1] if VIDA_RESULTS_PATH.split('/')[-1] != '' else VIDA_RESULTS_PATH.split('/')[-2]
-PATH_IN_B2 = f'/data4/common/{PROJ}'
-OUTPUT_PATH = 'Data_to_send'
-DATASHEET_PATH = 'Data/Datasheet/DataSheet.xlsx'
+    sys.exit("Error: Unexpected data included in source path")
+OUTPUT_FOLDER_NAME = (
+    VIDA_RESULTS_PATH.split("/")[-1]
+    if VIDA_RESULTS_PATH.split("/")[-1] != ""
+    else VIDA_RESULTS_PATH.split("/")[-2]
+)
+PATH_IN_B2 = f"/data4/common/{PROJ}"
+OUTPUT_PATH = "Data_to_send"
+DATASHEET_PATH = "Data/Datasheet/DataSheet.xlsx"
 
 
-print('>>> Construct Dataframe for ProjSubjList.in from Datasheet.xlsx', end=' ')
-datasheet_df = pd.read_excel(DATASHEET_PATH, usecols='A:C,I')
+print(">>> Construct Dataframe for ProjSubjList.in from Datasheet.xlsx", end=" ")
+datasheet_df = pd.read_excel(DATASHEET_PATH, usecols="A:C,I")
 case_data_list = []
 for case in CASE_ID_LIST:
     try:
-        row = datasheet_df.loc[datasheet_df['VidaCaseID'] == case]
+        row = datasheet_df.loc[datasheet_df["VidaCaseID"] == case]
         temp_dict = {}
         for k1, v1 in row.to_dict().items():
             for k2, v2 in v1.items():
                 temp_dict[k1] = v2
-        temp_dict['ImgDir'] = f'{PATH_IN_B2}/{OUTPUT_FOLDER_NAME}/{case}'
+        temp_dict["ImgDir"] = f"{PATH_IN_B2}/{OUTPUT_FOLDER_NAME}/{case}"
         case_data_list.append(temp_dict)
     except:
-        print(f'Cannot find case id {case}')
+        print(f"Cannot find case id {case}")
 case_data_df = pd.DataFrame(case_data_list)
-case_data_df.rename(columns={'IN/EX': 'Img'}, inplace=True)
-case_data_df.drop(columns=['VidaCaseID'], inplace=True)
-print('----- Done')
+case_data_df.rename(columns={"IN/EX": "Img"}, inplace=True)
+case_data_df.drop(columns=["VidaCaseID"], inplace=True)
+print("----- Done")
 
 
-print('>>> Create ProjSubjList.in', end=' ')
-today = datetime.today().strftime('%Y%m%d')
-projSubjListTitle = f'ProjSubjList.in.{today}_{PROJ}'
-case_data_df = case_data_df.to_csv(
-    index=False, line_terminator='\n').replace(',', '    ')
-with open(f'{OUTPUT_PATH}/{projSubjListTitle}', 'w') as f:
+print(">>> Create ProjSubjList.in", end=" ")
+today = datetime.today().strftime("%Y%m%d")
+projSubjListTitle = f"ProjSubjList.in.{today}_{PROJ}"
+case_data_df = case_data_df.to_csv(index=False, line_terminator="\n").replace(
+    ",", "    "
+)
+with open(f"{OUTPUT_PATH}/{projSubjListTitle}", "w") as f:
     f.write(case_data_df)
-print('----- Done')
+print("----- Done")
 
 
-print('>>> Compress VIDA results into one tar file')
-with tarfile.open(f'{OUTPUT_PATH}/{OUTPUT_FOLDER_NAME}.tar.bz2', 'w:bz2') as tar:
+print(">>> Compress VIDA results into one tar file")
+with tarfile.open(f"{OUTPUT_PATH}/{OUTPUT_FOLDER_NAME}.tar.bz2", "w:bz2") as tar:
     for case in tqdm(CASE_ID_LIST):
-        tar.add(Path(f'{VIDA_RESULTS_PATH}/{case}'), f'{OUTPUT_FOLDER_NAME}/{case}')
+        tar.add(Path(f"{VIDA_RESULTS_PATH}/{case}"), f"{OUTPUT_FOLDER_NAME}/{case}")
 
 
-print('>>> Send Data to B2')
-ssh_config = dotenv_values('.env')
-port = ssh_config['SSH_PORT']
-host = ssh_config['SSH_HOST']
-user = ssh_config['SSH_USERNAME']
-scp_process_1 = subprocess.run(['scp', '-P', port, f'{OUTPUT_PATH}/{projSubjListTitle}', f'{user}@{host}:{PATH_IN_B2}/'])
-scp_process_2 = subprocess.run(['scp', '-P', port, f'{OUTPUT_PATH}/{OUTPUT_FOLDER_NAME}.tar.bz2', f'{user}@{host}:{PATH_IN_B2}/'])
+print(">>> Send Data to B2")
+ssh_config = dotenv_values(".env")
+port = ssh_config["SSH_PORT"]
+host = ssh_config["SSH_HOST"]
+user = ssh_config["SSH_USERNAME"]
+scp_process_1 = subprocess.run(
+    [
+        "scp",
+        "-P",
+        port,
+        f"{OUTPUT_PATH}/{projSubjListTitle}",
+        f"{user}@{host}:{PATH_IN_B2}/",
+    ]
+)
+scp_process_2 = subprocess.run(
+    [
+        "scp",
+        "-P",
+        port,
+        f"{OUTPUT_PATH}/{OUTPUT_FOLDER_NAME}.tar.bz2",
+        f"{user}@{host}:{PATH_IN_B2}/",
+    ]
+)
 
 # SFTP using paramiko
 # class FastTransport(paramiko.Transport):
