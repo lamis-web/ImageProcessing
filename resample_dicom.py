@@ -26,6 +26,10 @@ def _check_dataset(dicom_dir: str):
         )
 
 
+def _get_3d_pixel_array(dicom_dir: str):
+    pass
+
+
 def _resample(img, spacing, new_spacing=[1, 1, 1]):
     spacing = np.array(spacing, dtype=np.float32)
     resize_factor = spacing / new_spacing
@@ -67,6 +71,7 @@ def construct_new_dataset(
 
 
 if __name__ == "__main__":
+    pass
     # construct_new_dataset("Data/SampleDicom/1393/dicom")
     # _check_dataset('Output/dicom')
 
