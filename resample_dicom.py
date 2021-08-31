@@ -72,15 +72,12 @@ def _construct_new_dcm_slice(
 
 def _construct_and_save_new_dcm_dataset(dcm_dataset: List[Dataset], new_spacing: np.float16, resampled_dcm_pixel_array: np.ndarray, output_path: str) -> FileDataset:
     dcm_template = dcm_dataset[0]
-    resampled_dcm_pixel_array = np.transpose(resampled_dcm_pixel_array, (2,0,1))
-    # save(resampled_dcm_pixel_array,f'{output_path}/temp.img')
-
-    # print(resampled_dcm_pixel_array.shape)
+    resampled_dcm_pixel_array = np.transpose(resampled_dcm_pixel_array, (2,0,1)).astype(np.uint16)
     for i, dcm_slice in enumerate(dcm_dataset):
-        dcm_slice.PixelData = resampled_dcm_pixel_array[i].tobytes()
-        # dcm_slice.save_as(f'{output_path}/{i}.dcm')
-        hdr = DCM_header()
-        save(resampled_dcm_pixel_array[i],f'{output_path}/{i}.dcm',hdr)
+        LargestImagePixelValue = np.unique(resampled_dcm_pixel_array[i])[-1]
+        dcm_slice.LargestImagePixelValue = LargestImagePixelValue
+        dcm_slice.PixelData = resampled_dcm_pixel_array[i].tostring()
+        dcm_slice.save_as(f'{output_path}/{i}.dcm')
 
 def resample_dcm(
     dcm_dir: str, new_spacing=1.0, output_path="Output/dicom"
@@ -92,24 +89,5 @@ def resample_dcm(
 
 if __name__ == "__main__":
     resample_dcm("Data/SampleDicom/1393/dicom")
-    
     # _check_dataset("Data/SampleDicom/1393/dicom")
     # _check_dataset("Output/dicom")
-
-    # ds = dcmread(r"Data\SampleDicom\1393\dicom\1.3.12.2.1107.5.1.4.65305.30000020091412370754200016817.dcm")
-    # print(ds.pixel_array.shape)
-# print(ds1.pixel_array)
-# print(ds1.pixel_array.shape)
-# temp_array = np.array([[1, 2, 3, 4, 5], [1, 2, 3, 4, 5], [1, 2, 3, 4, 5]])
-# ds1.PixelData = temp_array.tobytes()
-# print(ds1.PixelData)
-# print(ds1.pixel_array)
-# print(ds1.pixel_array.shape)
-
-# ds1 = dcmread(
-#     "Data/SampleDicom/1393/dicom/1.3.12.2.1107.5.1.4.65305.30000020091412370754200016784.dcm"
-# )
-
-# ds2 = copy.deepcopy(ds1)
-# print(id(ds1))
-# print(id(ds2))
