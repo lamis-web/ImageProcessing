@@ -23,16 +23,59 @@ def _get_dcm_paths_from_dir(dcm_dir: str):
 
 
 def _deidentify_and_save_single_dicom_img(dcm_path: str, dst_dicom_dir: str):
-    output_dir_name = dcm_path.split('\\')[-2] if dcm_path.split('\\') != [] else dcm_path.split('/')[-2]
-    output_file_name = dcm_path.split('\\')[-1] if dcm_path.split('\\') != [] else dcm_path.split('/')[-1]
-    
+    if dcm_path[-1] == '\\' or dcm_path[-1] == '/':
+        dcm_path = dcm_path[:-1]
+    if dst_dicom_dir[-1] == '\\' or dst_dicom_dir[-1] == '/':
+        dst_dicom_dir = dst_dicom_dir[:-1]
+
+    output_file_name = os.path.basename(dcm_path)
+    output_dir_name = os.path.basename(os.path.dirname(dcm_path))
+    patient_ID = os.path.basename(os.path.dirname(dst_dicom_dir))
+
     dicom_to_deidentify = dcmread(dcm_path)
     try:
-        dicom_to_deidentify.PatientID = dicom_to_deidentify.PatientName = output_dir_name
+        dicom_to_deidentify.PatientID = dicom_to_deidentify.PatientName = patient_ID
     except:
         print(f'{dcm_path}: PatientID or PatientName tag does not exist')
 
-    tags_to_anonymize = ['PatientBirthDate', 'PatientSex', 'PatientAge']
+    tags_to_anonymize = [
+        'PatientBirthDate', 
+        'PatientSex', 
+        'PatientAge',
+        'InstitutionName',
+        'InstitutionAddress',
+        'InstitutionalDepartmentName',
+        'ReferringPhysicianName',
+        'ReferringPhysicianTelephoneNumbers',
+        'ReferringPhysicianAddress',
+        'PhysiciansOfRecord',
+        'OperatorsName',
+        'IssuerOfPatientID',
+        'OtherPatientIDs',
+        'OtherPatientNames',
+        'OtherPatientIDsSequence',
+        'PatientBirthName',
+        'PatientSize',
+        'PatientWeight',
+        'PatientAddress',
+        'PatientMotherBirthName',
+        'CountryOfResidence',
+        'RegionOfResidence',
+        'CurrentPatientLocation',
+        'PatientTelephoneNumbers',
+        'SmokingStatus',
+        'PregnancyStatus',
+        'PatientReligiousPreference',
+        'RequestingPhysician',
+        'PerformingPhysicianName',
+        'NameOfPhysiciansReadingStudy',
+        'MilitaryRank',
+        'EthnicGroup',
+        'AdditionalPatientHistory',
+        'PatientComments',
+        'PersonName',
+        'ScheduledPatientInstitutionResidence'
+    ]
     for tag in tags_to_anonymize:
         if tag in dicom_to_deidentify:
             delattr(dicom_to_deidentify, tag)
