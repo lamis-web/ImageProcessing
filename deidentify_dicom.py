@@ -1,3 +1,8 @@
+# Usage
+# python 
+#   deidentify_dicom.py 
+#   /e/common/ImageData/DCM_20210827_GALA_RheSolve_STUDY00146630_TK/7071 
+#   /e/common/ImageData/DCM_Deid_TK/GALA/127-06-003/20210827/
 import os
 import argparse
 from pydicom import dcmread
