@@ -1,9 +1,9 @@
+import os
+import copy
+from typing import List
 import numpy as np
 import scipy.ndimage
-import copy
 from pydicom import dcmread, FileDataset, Dataset, uid
-from typing import List, Tuple
-import os
 
 
 def _get_dcm_paths_from_dir(dcm_dir: str):
@@ -119,18 +119,6 @@ def _construct_and_save_new_dcm_dataset(
             dcm_template, new_spacing, instance_number, resampled_dcm_slice_pixel_array
         )
         resampled_dcm_slice.save_as(f"{output_path}/{instance_number}.dcm")
-    # for i, dcm_slice in enumerate(dcm_dataset):
-    #     LargestImagePixelValue = np.unique(resampled_dcm_pixel_array[i])[-1]
-    #     dcm_slice.file_meta.TransferSyntaxUID = uid.ExplicitVRLittleEndian
-    #     dcm_slice.is_implicit_VR = False
-    #     dcm_slice.is_little_endian = True
-    #     dcm_slice.LargestImagePixelValue = LargestImagePixelValue
-    #     dcm_slice.BitsAllocated = 16
-    #     dcm_slice.BitsStored = 12
-    #     dcm_slice.HighBit = 11
-    #     dcm_slice.PixelRepresentation = 0
-    #     dcm_slice.PixelData = resampled_dcm_pixel_array[i].tobytes()
-    #     dcm_slice.save_as(f"{output_path}/{i}.dcm")
 
 
 def resample_dcm(dcm_dir: str, new_spacing=1.0, output_path="Output/dicom"):
