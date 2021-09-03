@@ -1,9 +1,11 @@
 # Usage Example
 # - python prepare_ProjSubjList.py /e/jchoi4/ImageData/C19/VIDA_20210701-01_C19_TK
 # Input
+# -------------------------------------------------------------------
 # - VIDA results folder path
+# -------------------------------------------------------------------
 # Dependency
-# - DataSheet.xlsx
+# - VidaDataSheet.xlsx
 
 import os
 import sys
@@ -38,7 +40,7 @@ OUTPUT_FOLDER_NAME = (
     if VIDA_RESULTS_PATH.split("/")[-1] != ""
     else VIDA_RESULTS_PATH.split("/")[-2]
 )
-PATH_IN_B2 = f"/data4/common/{PROJ}"
+PATH_IN_B2 = f"/data4/common/ImageData/{PROJ}"
 OUTPUT_PATH = "Data_to_send"
 DATASHEET_PATH = "Data/Datasheet/DataSheet.xlsx"
 
