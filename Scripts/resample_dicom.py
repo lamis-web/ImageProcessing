@@ -12,6 +12,10 @@ def _get_dcm_paths_from_dir(dcm_dir: str):
             yield os.path.join(base, file)
 
 
+def _mimic_src_dir_to_build_dst_dir(dcm_dir: str):
+    pass
+
+
 def _check_dataset(dicom_dir: str):
     for dcm_path in _get_dcm_paths_from_dir(dicom_dir):
         dcm = dcmread(dcm_path)
@@ -31,7 +35,7 @@ def _check_dataset(dicom_dir: str):
         )
 
 
-def _get_dcm_spacing(dcm: Dataset):
+def _get_dcm_spacing(dcm: Dataset) -> List:
     return list(map(lambda x: np.float16(x), [*dcm.PixelSpacing, dcm.SliceThickness]))
 
 
