@@ -1,13 +1,13 @@
 # Usage
-# - python update_datasheet.py {PROJ}
+# - python update_datasheet.py
 # Dependency
 # - VidaDatasheet.xlsx
+# Global Variable -----------------------------------------------------------
+XLSX_PATH = r"E:\common\Taewon\oneDrive\OneDrive - University of Kansas Medical Center\VidaDataSheet.xlsx"
+# ---------------------------------------------------------------------------
 import pandas as pd
 from pandas import DataFrame
 from openpyxl import load_workbook
-
-
-XLSX_PATH = r"E:\common\Taewon\oneDrive\OneDrive - University of Kansas Medical Center\VidaDataSheet.xlsx"
 
 
 def _find_first_case_id_to_update(vida_datasheet_df: DataFrame) -> int:
