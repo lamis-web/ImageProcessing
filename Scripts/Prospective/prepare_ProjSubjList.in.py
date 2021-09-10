@@ -4,67 +4,99 @@
 # - VIDA results folder path
 # Dependency
 # - VidaDatasheet.xlsx
-# Global Variable -----------------------------------------------------------
-XLSX_PATH = r"E:\common\Taewon\oneDrive\OneDrive - University of Kansas Medical Center\VidaDataSheet.xlsx"
-OUTPUT_PATH = "Data_to_send"
-PATH_IN_B2 = f"/data4/common/ImageData"
-# ---------------------------------------------------------------------------
 import os
 import sys
 import argparse
+import subprocess
 import tarfile
 from pathlib import Path
 from datetime import datetime
 from typing import List
 from tqdm import tqdm
 import pandas as pd
+from dotenv import dotenv_values
 
 
-# parser = argparse.ArgumentParser(
-#     description="Prepare ProjSubjList.in, Compressed zip of VIDA results and send it to the B2"
-# )
-# parser.add_argument(
-#     "src", metavar="src", type=str, help="VIDA results source folder path"
-# )
-# args = parser.parse_args()
-# VIDA_RESULTS_PATH = args.src
-# OUTPUT_FOLDER = (
-#     VIDA_RESULTS_PATH.split("/")[-1]
-#     if VIDA_RESULTS_PATH.split("/")[-1] != ""
-#     else VIDA_RESULTS_PATH.split("/")[-2]
-# )
+parser = argparse.ArgumentParser(
+    description="Prepare ProjSubjList.in, Compressed zip of VIDA results and send it to the B2"
+)
+parser.add_argument(
+    "src", metavar="src", type=str, help="VIDA results source folder path"
+)
+args = parser.parse_args()
 
 
-def _get_case_ids(VIDA_RESULTS_PATH: str) -> List[int]:
+# Global Variable -----------------------------------------------------------
+XLSX_PATH = r"E:\common\Taewon\oneDrive\OneDrive - University of Kansas Medical Center\VidaDataSheet.xlsx"
+OUTPUT_PATH = "Data_to_send"
+PATH_IN_B2 = f"/data4/common/ImageData"
+VIDA_RESULTS_PATH = args.src
+OUTPUT_FOLDER = (
+    VIDA_RESULTS_PATH.split("/")[-1]
+    if VIDA_RESULTS_PATH.split("/")[-1] != ""
+    else VIDA_RESULTS_PATH.split("/")[-2]
+)
+# ---------------------------------------------------------------------------
+
+
+def _get_case_ids(vida_result_paths=VIDA_RESULTS_PATH) -> List[int]:
     try:
-        case_ids = [int(case) for case in os.listdir(VIDA_RESULTS_PATH)]
+        case_ids = [int(case) for case in os.listdir(vida_result_paths)]
     except:
         sys.exit("Error: Unexpected data included in source path")
     return case_ids
 
 
-def _construct_ProjSubjList_in(XLSX_PATH: str):
-    case_ids = [1377, 1388]
-    df = pd.read_excel(XLSX_PATH, usecols="A:C,I")
+def _get_ProjSubjList_in_path(xlsx_path=XLSX_PATH, path_in_b2=PATH_IN_B2, output_path=OUTPUT_PATH) -> str:
+    # case_ids = [1377, 1388] # hard coded
+    df = pd.read_excel(xlsx_path, usecols="A:C,I")
     df = df.query('VidaCaseID in @case_ids')
-    df['ImgDir'] = f'{PATH_IN_B2}/' +  df['Proj'] + '/' + df['VidaCaseID'].astype(str)
+    df['ImgDir'] = f'{path_in_b2}/' +  df['Proj'] + '/' + df['VidaCaseID'].astype(str)
     df.rename(columns={"IN/EX": "Img"}, inplace=True)
     df.drop(columns=["VidaCaseID"], inplace=True)
 
     proj = df['Proj'].iloc[0]
     today = datetime.today().strftime("%Y%m%d")
-    with open(f'{OUTPUT_PATH}/ProjSubjList.in.{today}_{proj}', 'w') as f:
+    with open(f'{output_path}/ProjSubjList.in.{today}_{proj}', 'w') as f:
         f.write(df)
+    
+    return f'{output_path}/ProjSubjList.in.{today}_{proj}'
 
 
-# def _compress_vida_results(case_ids: List[int]):
-#     with tarfile.open(f"{OUTPUT_PATH}/{OUTPUT_FOLDER}.tar.bz2", "w:bz2") as tar:
-#         for case in tqdm(case_ids):
-#             tar.add(Path(f"{VIDA_RESULTS_PATH}/{case}"), f"{OUTPUT_FOLDER}/{case}")
+def _compress_vida_results(case_ids: List[int], vida_results_path=VIDA_RESULTS_PATH, output_path=OUTPUT_PATH, output_folder=OUTPUT_FOLDER):
+    with tarfile.open(f"{output_path}/{output_folder}.tar.bz2", "w:bz2") as tar:
+        for case in tqdm(case_ids):
+            tar.add(Path(f"{vida_results_path}/{case}"), f"{output_folder}/{case}")
 
 
-def _send_to_b2(ProjSubjList_in=None):
-    pass
+def _send_vida_results_to_b2(ProjSubjList_in=False):
+    ssh_config = dotenv_values(".env")
+    port = ssh_config["SSH_PORT"]
+    host = ssh_config["SSH_HOST"]
+    user = ssh_config["SSH_USERNAME"]
+    if ProjSubjList_in:
+        ProjSubjList_in_path = _get_ProjSubjList_in_path()
+        subprocess.run(
+            [
+                "scp",
+                "-P",
+                port,
+                f"{OUTPUT_PATH}/{ProjSubjList_in_path}",
+                f"{user}@{host}:{PATH_IN_B2}/",
+            ]
+        )
+    subprocess.run(
+        [
+            "scp",
+            "-P",
+            port,
+            f"{OUTPUT_PATH}/{OUTPUT_FOLDER}.tar.bz2",
+            f"{user}@{host}:{PATH_IN_B2}/",
+        ]
+    )
+
 
 if __name__ == '__main__':
-    _construct_ProjSubjList_in(XLSX_PATH)
+    case_ids = _get_case_ids()
+    _compress_vida_results(case_ids)
+    _send_vida_results_to_b2(ProjSubjList_in=True)
