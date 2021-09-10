@@ -29,7 +29,7 @@ args = parser.parse_args()
 # Global Variable -----------------------------------------------------------
 XLSX_PATH = r"E:\common\Taewon\oneDrive\OneDrive - University of Kansas Medical Center\VidaDataSheet.xlsx"
 OUTPUT_PATH = "Data_to_send"
-PATH_IN_B2 = f"/data4/common/ImageData"
+PATH_IN_REMOTE_HOST = f"/data4/common/ImageData"
 VIDA_RESULTS_PATH = args.src
 OUTPUT_FOLDER = (
     VIDA_RESULTS_PATH.split("/")[-1]
@@ -47,11 +47,11 @@ def _get_case_ids(vida_result_paths=VIDA_RESULTS_PATH) -> List[int]:
     return case_ids
 
 
-def _get_ProjSubjList_in_path(xlsx_path=XLSX_PATH, path_in_b2=PATH_IN_B2, output_path=OUTPUT_PATH) -> str:
+def _get_ProjSubjList_in_path(xlsx_path=XLSX_PATH, path_in_remote_host=PATH_IN_REMOTE_HOST, output_path=OUTPUT_PATH) -> str:
     # case_ids = [1377, 1388] # hard coded
     df = pd.read_excel(xlsx_path, usecols="A:C,I")
     df = df.query('VidaCaseID in @case_ids')
-    df['ImgDir'] = f'{path_in_b2}/' +  df['Proj'] + '/' + df['VidaCaseID'].astype(str)
+    df['ImgDir'] = f'{path_in_remote_host}/' +  df['Proj'] + '/' + df['VidaCaseID'].astype(str)
     df.rename(columns={"IN/EX": "Img"}, inplace=True)
     df.drop(columns=["VidaCaseID"], inplace=True)
 
@@ -82,7 +82,7 @@ def _send_vida_results_to_b2(ProjSubjList_in=False):
                 "-P",
                 port,
                 f"{OUTPUT_PATH}/{ProjSubjList_in_path}",
-                f"{user}@{host}:{PATH_IN_B2}/",
+                f"{user}@{host}:{PATH_IN_REMOTE_HOST}/",
             ]
         )
     subprocess.run(
@@ -91,7 +91,7 @@ def _send_vida_results_to_b2(ProjSubjList_in=False):
             "-P",
             port,
             f"{OUTPUT_PATH}/{OUTPUT_FOLDER}.tar.bz2",
-            f"{user}@{host}:{PATH_IN_B2}/",
+            f"{user}@{host}:{PATH_IN_REMOTE_HOST}/",
         ]
     )
 
