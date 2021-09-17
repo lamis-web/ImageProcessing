@@ -1,5 +1,5 @@
 # Usage
-# - python prepare_ProjSubjList.py /e/jchoi4/ImageData/C19/VIDA_20210701-01_C19_TK
+# - python send_dicom_to_remote_host.py /e/jchoi4/ImageData/C19/VIDA_20210701-01_C19_TK
 # Input
 # - VIDA results folder path
 # Dependency
