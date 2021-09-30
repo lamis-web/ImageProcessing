@@ -1,8 +1,8 @@
 # Usage
 # python deidentify_dicom.py {dicom_src_dir} {dicom_dst_dir}
 #   deidentify_dicom.py
-#   /e/common/ImageData/DCM_20210827_GALA_RheSolve_STUDY00146630_TK/7071
-#   /e/common/ImageData/DCM_Deid_TK/GALA/127-06-003/20210827/
+#   /e/common/ImageData/DCM_20210929_GALA_127-06-005_TK
+#   /e/common/ImageData/DCM_20210929_GALA_127-06-005_DEID_TK
 import os
 import argparse
 from pydicom import Dataset, dcmread
@@ -21,11 +21,16 @@ args = parser.parse_args()
 src_dcm_dir = args.src
 dst_dcm_dir = args.dst
 
-
 def _get_dcm_paths_from_dir(dcm_dir: str):
     for base, _, files in os.walk(dcm_dir):
         for file in files:
             yield os.path.join(base, file)
+
+def _get_patient_id_from_src_dir(dcm_dir: str) -> str:
+    if dcm_dir[-1] == "\\" or dcm_dir[-1] == "/":
+        dcm_dir = dcm_dir[:-1]
+    
+    return os.path.basename(dcm_dir).split('_')[-2]
 
 def _get_patient_id_from_dir(dst_dcm_dir: str) -> str:
     if dst_dcm_dir[-1] == "\\" or dst_dcm_dir[-1] == "/":
@@ -111,7 +116,8 @@ def _save_dcm_slice(deidentified_dcm_slice: Dataset, dcm_path: str, dst_dcm_dir:
 
 
 if __name__ == "__main__":
-    patient_id = _get_patient_id_from_dir(dst_dcm_dir)
+    # patient_id = _get_patient_id_from_dir(dst_dcm_dir)
+    patient_id = _get_patient_id_from_src_dir(src_dcm_dir)
     for dcm_path in _get_dcm_paths_from_dir(src_dcm_dir):
         deidentified_dcm_slice = _deidentify_dcm_slice(dcm_path, patient_id)
         _save_dcm_slice(deidentified_dcm_slice, dcm_path, dst_dcm_dir)

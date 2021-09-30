@@ -3,7 +3,7 @@
 # Dependency
 # - VidaDatasheet.xlsx
 # Global Variable -----------------------------------------------------------
-XLSX_PATH = r"E:\common\Taewon\oneDrive\OneDrive - University of Kansas Medical Center\VidaDataSheet.xlsx"
+XLSX_PATH = r"E:\common\Taewon\oneDrive\OneDrive - University of Kansas Medical Center\VidaSheet.xlsx"
 # ---------------------------------------------------------------------------
 import pandas as pd
 from pandas import DataFrame
