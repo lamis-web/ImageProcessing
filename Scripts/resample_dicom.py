@@ -73,6 +73,9 @@ def _resample_dcm_pixel_array(
         dcm_pixel_array, real_resize_factor, mode="nearest"
     )
     resampled_dcm_pixel_array = np.transpose(resampled_dcm_pixel_array, (2, 0, 1))
+
+    # This part needs to be revised
+    # 
     resampled_dcm_pixel_array = (
         resampled_dcm_pixel_array / np.amax(resampled_dcm_pixel_array) * 4092
     )
@@ -94,10 +97,10 @@ def _construct_new_dcm_slice(
     new_dcm_slice.is_little_endian = True
     new_dcm_slice.SOPInstanceUID = uid.generate_uid()
     new_dcm_slice.LargestImagePixelValue = np.unique(resampled_dcm_pixel_2D)[-1]
-    new_dcm_slice.BitsAllocated = 16
-    new_dcm_slice.BitsStored = 12
-    new_dcm_slice.HighBit = 11
-    new_dcm_slice.PixelRepresentation = 0
+    # new_dcm_slice.BitsAllocated = 16
+    # new_dcm_slice.BitsStored = 12
+    # new_dcm_slice.HighBit = 11
+    # new_dcm_slice.PixelRepresentation = 0
     new_dcm_slice.InstanceNumber = instance_number
     new_dcm_slice.SliceThickness = new_spacing
     new_dcm_slice.SliceLocation = (
@@ -125,11 +128,12 @@ def _construct_and_save_new_dcm_dataset(
         resampled_dcm_slice.save_as(f"{output_path}/{instance_number}.dcm")
 
 
-def resample_dcm(dcm_dir: str, new_spacing=1.0, output_path="Output/dicom"):
+def resample_dcm(dcm_dir: str, output_path: str, new_spacing=1.0):
     dcm_template = _get_dcm_template(dcm_dir)
     dcm_pixel_array = _get_dcm_pixel_array(dcm_dir)
     dcm_spacing = _get_dcm_spacing(dcm_template)
     new_dcm_spacing = [*dcm_spacing[:-1], new_spacing]
+    print(dcm_spacing, '->', new_dcm_spacing)
     resampled_dcm_pixel_array = _resample_dcm_pixel_array(
         dcm_pixel_array, dcm_spacing, new_dcm_spacing
     )
@@ -139,6 +143,7 @@ def resample_dcm(dcm_dir: str, new_spacing=1.0, output_path="Output/dicom"):
 
 
 if __name__ == "__main__":
-    resample_dcm("Data/SampleDicom/1393/dicom")
-    # _check_dataset("Data/SampleDicom/1393/dicom")
-    # _check_dataset("Output/dicom")
+    src_dcm_path = r'C:\Users\tkim3\Documents\Codes\ImageProcessing\Data\SampleDicom\1379\dicom'
+    output_dcm_path = r'C:\Users\tkim3\Documents\Codes\ImageProcessing\Output\dicom\1379'
+    resample_dcm(src_dcm_path, output_dcm_path)
+    # _check_dataset(src_dcm_path)
