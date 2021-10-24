@@ -13,13 +13,11 @@ parser = argparse.ArgumentParser(
     description="Recursively de-identify and save DICOM images from src to dst"
 )
 parser.add_argument("src", metavar="src", type=str, help="DICOM source folder path")
-parser.add_argument(
-    "dst", metavar="dst", type=str, help="DICOM destination folder path"
-)
 args = parser.parse_args()
 
 src_dcm_dir = args.src
-dst_dcm_dir = args.dst
+dst_dcm_dir = ('_').join(src_dcm_dir.split('_')[:-1])
+dst_dcm_dir = ('_').join([dst_dcm_dir, 'DEID', src_dcm_dir.split('_')[-1]])
 
 def _get_dcm_paths_from_dir(dcm_dir: str):
     for base, _, files in os.walk(dcm_dir):
@@ -106,6 +104,9 @@ def _save_dcm_slice(deidentified_dcm_slice: Dataset, dcm_path: str, dst_dcm_dir:
 
     output_file_name = os.path.basename(dcm_path)
     output_dir_name = os.path.basename(os.path.dirname(dcm_path))
+
+    if not os.path.exists(f"{dst_dcm_dir}"):
+        os.makedirs(f"{dst_dcm_dir}")
 
     if not os.path.exists(f"{dst_dcm_dir}/{output_dir_name}"):
         os.makedirs(f"{dst_dcm_dir}/{output_dir_name}")
